@@ -11,11 +11,11 @@ type GenericCredentialPostRequest struct {
 	Parameters json.RawMessage `json:"parameters, omitempty"`
 }
 
-type GenericCredential interface {
+type GenericCredentialRequest interface {
 	Generate() error
 }
 
-func ParseGenericCredentialRequest(requestBody string) GenericCredential {
+func ParseGenericCredentialRequest(requestBody string) GenericCredentialRequest {
 	var g GenericCredentialPostRequest
 	err := json.Unmarshal([]byte(requestBody), &g)
 	if err != nil {
