@@ -67,7 +67,7 @@
 			"vcs": "git",
 			"revision": "905a57155faa8230500121607930ebb9dd8e139c",
 			"branch": "master",
-			"path": "/encoding",
+			"path": "encoding",
 			"notests": true
 		},
 		{
