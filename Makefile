@@ -4,7 +4,7 @@ help: ## Displays information about available make tasks
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: init
-init: bin/blite ## Installs developer dependencies
+init: ## Installs developer dependencies
 	@go get github.com/onsi/ginkgo/ginkgo
 	@go get github.com/onsi/gomega/...
 
