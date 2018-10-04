@@ -1,8 +1,8 @@
 package types
 
-const passwordType = "password"
+const PasswordType = "password"
 
-type PasswordPostRequest struct {
+type PasswordRequest struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
 }
@@ -13,6 +13,10 @@ type PasswordPostResponse struct {
 	Value string `json:"value"`
 }
 
-func (r *PasswordPostRequest) IsPasswordRequest() bool {
-	return r.Type == passwordType
+func (r *PasswordRequest) IsPasswordRequest() bool {
+	return r.Type == PasswordType
+}
+
+func (r *PasswordRequest) Generate() error {
+	return nil
 }

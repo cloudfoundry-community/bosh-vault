@@ -1,8 +1,8 @@
 package types
 
-const certificateType = "certificate"
+const CertificateType = "certificate"
 
-type CertificatePostRequest struct {
+type CertificateRequest struct {
 	Name       string `json:"name"`
 	Type       string `json:"type"`
 	Parameters struct {
@@ -13,27 +13,31 @@ type CertificatePostRequest struct {
 	}
 }
 
-func (r CertificatePostRequest) IsRootCaRequest() bool {
-	return r.Type == certificateType &&
+func (r CertificateRequest) IsRootCaRequest() bool {
+	return r.Type == CertificateType &&
 		r.Parameters.IsCa &&
 		r.Parameters.CommonName != "" &&
 		r.Parameters.Ca == "" &&
 		len(r.Parameters.AlternativeNames) == 0
 }
 
-func (r CertificatePostRequest) IsIntermediateCaRequest() bool {
-	return r.Type == certificateType &&
+func (r CertificateRequest) IsIntermediateCaRequest() bool {
+	return r.Type == CertificateType &&
 		r.Parameters.IsCa &&
 		r.Parameters.CommonName != "" &&
 		r.Parameters.Ca != "" &&
 		len(r.Parameters.AlternativeNames) == 0
 }
 
-func (r CertificatePostRequest) IsRegularCertificateRequest() bool {
-	return r.Type == certificateType &&
+func (r CertificateRequest) IsRegularCertificateRequest() bool {
+	return r.Type == CertificateType &&
 		!r.Parameters.IsCa &&
 		r.Parameters.Ca != "" &&
 		r.Parameters.CommonName != ""
+}
+
+func (c *CertificateRequest) Generate() error {
+	return nil
 }
 
 type CertificatePostResponse struct {
