@@ -13,7 +13,7 @@ build: fmt ## Builds the binary
 	@go build -o bin/vault-cfcs
 
 .PHONY: run
-run: build ## Run the binary (also builds)
+run: build ## Runs the binary (also builds)
 	./bin/vault-cfcs
 
 .PHONY: fmt
@@ -21,7 +21,7 @@ fmt: ## Runs gofmt on the entire project
 	@go fmt ./...
 
 .PHONY: test
-test: init fmt ## Run all test suites with ginkgo
+test: init fmt ## Runs all test suites with ginkgo
 	@ginkgo -v -p --randomizeAllSpecs --randomizeSuites --succinct * */* */*/*
 
 bin/blite:
