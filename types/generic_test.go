@@ -29,5 +29,12 @@ var _ = Describe("Generic", func() {
 				Expect(reflect.TypeOf(credential)).To(Equal(reflect.TypeOf((*vcfcsTypes.PasswordRequest)(nil))))
 			})
 		})
+
+		Context("valid ssh key requests", func() {
+			It("parses a ssh keypair object", func() {
+				credential := vcfcsTypes.ParseGenericCredentialRequest(fakes.SshKeypairRequestBody)
+				Expect(reflect.TypeOf(credential)).To(Equal(reflect.TypeOf((*vcfcsTypes.SshKeypairRequest)(nil))))
+			})
+		})
 	})
 })

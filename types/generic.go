@@ -30,6 +30,10 @@ func ParseGenericCredentialRequest(requestBody string) GenericCredentialRequest 
 		var password PasswordRequest
 		json.Unmarshal([]byte(requestBody), &password)
 		return &password
+	case SshKeypairType:
+		var ssh SshKeypairRequest
+		json.Unmarshal([]byte(requestBody), &ssh)
+		return &ssh
 	default:
 		return nil
 	}
