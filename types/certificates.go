@@ -36,8 +36,16 @@ func (r CertificateRequest) IsRegularCertificateRequest() bool {
 		r.Parameters.CommonName != ""
 }
 
-func (c *CertificateRequest) Generate() error {
+func (r *CertificateRequest) Generate() error {
 	return nil
+}
+
+func (r *CertificateRequest) CredentialType() string {
+	return r.Type
+}
+
+func (r *CertificateRequest) Validate() bool {
+	return r.IsRootCaRequest() || r.IsIntermediateCaRequest() || r.IsRegularCertificateRequest()
 }
 
 type CertificatePostResponse struct {

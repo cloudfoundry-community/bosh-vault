@@ -20,8 +20,8 @@ var _ = Describe("SSH", func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
 
-			It("returns true when IsPasswordRequest is called", func() {
-				Expect(SshRequest.IsSshKeypairRequest()).To(BeTrue())
+			It("returns true when Validate is called", func() {
+				Expect(SshRequest.Validate()).To(BeTrue())
 			})
 		})
 	})

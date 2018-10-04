@@ -13,10 +13,14 @@ type PasswordPostResponse struct {
 	Value string `json:"value"`
 }
 
-func (r *PasswordRequest) IsPasswordRequest() bool {
+func (r *PasswordRequest) Validate() bool {
 	return r.Type == PasswordType
 }
 
 func (r *PasswordRequest) Generate() error {
 	return nil
+}
+
+func (r *PasswordRequest) CredentialType() string {
+	return r.Type
 }

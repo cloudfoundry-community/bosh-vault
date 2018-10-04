@@ -7,10 +7,14 @@ type SshKeypairRequest struct {
 	Type string `json:"type"`
 }
 
-func (s *SshKeypairRequest) IsSshKeypairRequest() bool {
-	return s.Type == SshKeypairType
+func (r *SshKeypairRequest) Validate() bool {
+	return r.Type == SshKeypairType
 }
 
-func (s *SshKeypairRequest) Generate() error {
+func (r *SshKeypairRequest) Generate() error {
 	return nil
+}
+
+func (r *SshKeypairRequest) CredentialType() string {
+	return r.Type
 }

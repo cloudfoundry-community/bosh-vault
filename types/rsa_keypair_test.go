@@ -20,8 +20,8 @@ var _ = Describe("RSA", func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
 
-			It("returns true when IsPasswordRequest is called", func() {
-				Expect(RsaRequest.IsRsaKeypairRequest()).To(BeTrue())
+			It("returns true when Validate is called", func() {
+				Expect(RsaRequest.Validate()).To(BeTrue())
 			})
 		})
 	})

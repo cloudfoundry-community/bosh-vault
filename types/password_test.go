@@ -20,8 +20,8 @@ var _ = Describe("Password", func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
 
-			It("returns true when IsPasswordRequest is called", func() {
-				Expect(PasswordRequest.IsPasswordRequest()).To(BeTrue())
+			It("returns true when Validate is called", func() {
+				Expect(PasswordRequest.Validate()).To(BeTrue())
 			})
 		})
 	})

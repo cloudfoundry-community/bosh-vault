@@ -14,9 +14,11 @@ type GenericCredentialPostRequest struct {
 
 type GenericCredentialRequest interface {
 	Generate() error
+	Validate() bool
+	CredentialType() string
 }
 
-func ParseGenericCredentialRequest(requestBody string) (GenericCredentialRequest, error) {
+func ParseGenericCredentialRequest(requestBody []byte) (GenericCredentialRequest, error) {
 	var g GenericCredentialPostRequest
 	err := json.Unmarshal([]byte(requestBody), &g)
 	if err != nil {
@@ -25,21 +27,21 @@ func ParseGenericCredentialRequest(requestBody string) (GenericCredentialRequest
 	switch g.Type {
 	case CertificateType:
 		var certificate CertificateRequest
-		err = json.Unmarshal([]byte(requestBody), &certificate)
+		err = json.Unmarshal(requestBody, &certificate)
 		return &certificate, err
 	case PasswordType:
 		var password PasswordRequest
-		err = json.Unmarshal([]byte(requestBody), &password)
+		err = json.Unmarshal(requestBody, &password)
 		return &password, err
 	case SshKeypairType:
 		var ssh SshKeypairRequest
-		err = json.Unmarshal([]byte(requestBody), &ssh)
+		err = json.Unmarshal(requestBody, &ssh)
 		return &ssh, err
 	case RsaKeypairType:
 		var rsa RsaKeypairRequest
-		err = json.Unmarshal([]byte(requestBody), &rsa)
+		err = json.Unmarshal(requestBody, &rsa)
 		return &rsa, err
 	default:
-		return nil, errors.New(fmt.Sprintf("Request type not supported! Must be one of: %s, %s, %s, %s", CertificateType, PasswordType, SshKeypairType, RsaKeypairType))
+		return nil, errors.New(fmt.Sprintf("Credential request type: %s not supported! Must be one of: %s, %s, %s, %s", g.Type, CertificateType, PasswordType, SshKeypairType, RsaKeypairType))
 	}
 }
