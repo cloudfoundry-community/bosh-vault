@@ -1,6 +1,8 @@
 # Vault CloudFoundry Config Server
 This repo is an attempt to make an implementation of the config server API using Vault as a backend. It is a work in progress and should not be used.
 
+[![CircleCI](https://circleci.com/gh/Zipcar/vault-cfcs/tree/master.svg?style=svg)](https://circleci.com/gh/Zipcar/vault-cfcs/tree/master)
+
 # Resources
   - [Config server api documentation](https://github.com/cloudfoundry/config-server/blob/master/docs/api.md)
   - [Bosh config server integration with credhub](https://github.com/cloudfoundry-incubator/credhub/blob/master/docs/bosh-config-server.md)
