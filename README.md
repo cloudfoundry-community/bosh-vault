@@ -12,3 +12,8 @@ This repo is an attempt to make an implementation of the config server API using
 The Vault Cloudfoundry Config Server is meant to be run alongside Vault and proxy config server requests.
 
 ![high level architecture diagram](docs/diagrams/high-level-architecture.jpg)
+
+# Contributing
+ 1. Clone this repo into `$GOPATH/src/github.com/zipcar/vault-cfcs`
+ 1. Run `make` to see the available workflow commands.
+ 1. Run `make test` and `make run` to get things running locally.
