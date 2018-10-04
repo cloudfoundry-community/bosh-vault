@@ -28,6 +28,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/konsorten/go-windows-terminal-sequences",
+			"repository": "https://github.com/konsorten/go-windows-terminal-sequences",
+			"vcs": "git",
+			"revision": "b729f2633dfe35f4d1d8a32385f6685610ce1cb5",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/onsi/ginkgo",
 			"repository": "https://github.com/onsi/ginkgo",
 			"vcs": "git",
@@ -41,6 +49,23 @@
 			"vcs": "git",
 			"revision": "7615b9433f86a8bdf29709bf288bc4fd0636a369",
 			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/sirupsen/logrus",
+			"repository": "https://github.com/sirupsen/logrus",
+			"vcs": "git",
+			"revision": "1ed61965b9e594bf37539680d7f63eccd060314f",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/crypto/ssh/terminal",
+			"repository": "https://go.googlesource.com/crypto",
+			"vcs": "git",
+			"revision": "e3636079e1a4c1f337f212cc5cd2aca108f6c900",
+			"branch": "master",
+			"path": "/ssh/terminal",
 			"notests": true
 		},
 		{
@@ -59,6 +84,15 @@
 			"revision": "8469e314837c2e2471561de5c47bbf8bfd0d9099",
 			"branch": "master",
 			"path": "/unix",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/sys/windows",
+			"repository": "https://go.googlesource.com/sys",
+			"vcs": "git",
+			"revision": "8469e314837c2e2471561de5c47bbf8bfd0d9099",
+			"branch": "master",
+			"path": "/windows",
 			"notests": true
 		},
 		{
