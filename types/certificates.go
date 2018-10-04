@@ -1,5 +1,7 @@
 package types
 
+const certificateType = "certificate"
+
 type CertificatePostRequest struct {
 	Name       string `json:"name"`
 	Type       string `json:"type"`
@@ -12,21 +14,24 @@ type CertificatePostRequest struct {
 }
 
 func (r CertificatePostRequest) IsRootCaRequest() bool {
-	return r.Parameters.IsCa &&
+	return r.Type == certificateType &&
+		r.Parameters.IsCa &&
 		r.Parameters.CommonName != "" &&
 		r.Parameters.Ca == "" &&
 		len(r.Parameters.AlternativeNames) == 0
 }
 
 func (r CertificatePostRequest) IsIntermediateCaRequest() bool {
-	return r.Parameters.IsCa &&
+	return r.Type == certificateType &&
+		r.Parameters.IsCa &&
 		r.Parameters.CommonName != "" &&
 		r.Parameters.Ca != "" &&
 		len(r.Parameters.AlternativeNames) == 0
 }
 
 func (r CertificatePostRequest) IsRegularCertificateRequest() bool {
-	return !r.Parameters.IsCa &&
+	return r.Type == certificateType &&
+		!r.Parameters.IsCa &&
 		r.Parameters.Ca != "" &&
 		r.Parameters.CommonName != ""
 }
