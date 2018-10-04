@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"github.com/zipcar/vault-cfcs/logger"
+	"github.com/zipcar/vault-cfcs/server"
+)
 
 func main() {
-	fmt.Println("Hello world. I am vault-cfcs.")
+	logger.InitializeLogger()
+	logger.Log.Info("Hello world. I am vault-cfcs.")
+	server.ListenAndServe()
 }
