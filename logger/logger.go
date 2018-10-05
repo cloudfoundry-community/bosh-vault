@@ -13,8 +13,8 @@ func InitializeLogger(vcfcsConfig config.Configuration) {
 	Log.SetFormatter(&logrus.JSONFormatter{})
 	logLevel, err := logrus.ParseLevel(vcfcsConfig.LogLevel)
 	if err != nil {
-		Log.Error("Error parsing configured log level, defaulting to ERROR.")
-		logLevel = logrus.ErrorLevel
+		Log.Errorf("error parsing configured log level %s, defaulting to debug", vcfcsConfig.LogLevel)
+		logLevel = logrus.DebugLevel
 	}
 	Log.SetLevel(logLevel)
 	Log.Out = os.Stdout
