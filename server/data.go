@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"github.com/labstack/echo"
 	"github.com/labstack/gommon/log"
 	vcfcsTypes "github.com/zipcar/vault-cfcs/types"
@@ -17,10 +16,13 @@ func dataPostHandler(ctx echo.Context) error {
 		return err
 	}
 
+	ctx.Logger().Debugf("request: %s", requestBody)
+
 	credentialRequest, err := vcfcsTypes.ParseGenericCredentialRequest(requestBody)
 	if err != nil {
 		ctx.Logger().Error(err)
 		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, err.Error()))
+		return err
 	}
 
 	credentialType := credentialRequest.CredentialType()
@@ -28,9 +30,10 @@ func dataPostHandler(ctx echo.Context) error {
 	if !ok {
 		ctx.Logger().Error("Invalid credential request for ", credentialType)
 		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, "Invalid credential request for ", credentialType))
+		return err
 	}
 
-	ctx.Logger().Info(fmt.Sprintf("Attempting to generate %s", credentialType))
+	ctx.Logger().Debugf("Attempting to generate %s", credentialType)
 
 	err = credentialRequest.Generate()
 	if err != nil {
