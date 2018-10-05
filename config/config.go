@@ -5,20 +5,20 @@ import (
 	"github.com/micro/go-config/source/file"
 )
 
-const default_api_listen_address = "localhost:1337"
-const default_log_level = "DEBUG"
+const DefaultApiListenAddress = "localhost:1337"
+const DefaultLogLevel = "DEBUG"
 
 type Configuration struct {
-	ApiListenAddress string `json:"listen_addr" yaml:"listen_addr"`
+	ApiListenAddress string `json:"api_listen_addr" yaml:"api_listen_addr"`
 	LogLevel         string `json:"log_level" yaml:"log_level"`
 }
 
 func GetConfig(configFilePath *string) Configuration {
 	var vcfcsConfig Configuration
-	vcfcsConfig.ApiListenAddress = default_api_listen_address
-	vcfcsConfig.LogLevel = default_log_level
+	vcfcsConfig.ApiListenAddress = DefaultApiListenAddress
+	vcfcsConfig.LogLevel = DefaultLogLevel
 
-	if *configFilePath == "" {
+	if configFilePath == nil || *configFilePath == "" {
 		return vcfcsConfig
 	} else {
 		conf := config.NewConfig()

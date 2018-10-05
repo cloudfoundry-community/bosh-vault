@@ -1,0 +1,4 @@
+{
+  "api_listen_addr": "localhost:8000",
+  "log_level": "ERROR"
+}
