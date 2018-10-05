@@ -22,7 +22,7 @@ func ParseGenericCredentialRequest(requestBody []byte) (GenericCredentialRequest
 	var g GenericCredentialPostRequest
 	err := json.Unmarshal([]byte(requestBody), &g)
 	if err != nil {
-		fmt.Println("Error unmarshalling!")
+		return nil, errors.New(fmt.Sprintf("error unmarshaling json request: %s", err.Error()))
 	}
 	switch g.Type {
 	case CertificateType:
@@ -42,6 +42,6 @@ func ParseGenericCredentialRequest(requestBody []byte) (GenericCredentialRequest
 		err = json.Unmarshal(requestBody, &rsa)
 		return &rsa, err
 	default:
-		return nil, errors.New(fmt.Sprintf("Credential request type: %s not supported! Must be one of: %s, %s, %s, %s", g.Type, CertificateType, PasswordType, SshKeypairType, RsaKeypairType))
+		return nil, errors.New(fmt.Sprintf("credential request type: %s not supported! Must be one of: %s, %s, %s, %s", g.Type, CertificateType, PasswordType, SshKeypairType, RsaKeypairType))
 	}
 }
