@@ -227,7 +227,9 @@ func (a *ACLHandle) objectDelete(ctx context.Context, entity ACLEntity) error {
 	})
 }
 
-func (a *ACLHandle) configureCall(call interface{ Header() http.Header }, ctx context.Context) {
+func (a *ACLHandle) configureCall(call interface {
+	Header() http.Header
+}, ctx context.Context) {
 	vc := reflect.ValueOf(call)
 	vc.MethodByName("Context").Call([]reflect.Value{reflect.ValueOf(ctx)})
 	if a.userProject != "" {

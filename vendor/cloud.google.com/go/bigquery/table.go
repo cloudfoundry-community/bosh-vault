@@ -170,9 +170,9 @@ func (p *TimePartitioning) toBQ() *bq.TimePartitioning {
 		return nil
 	}
 	return &bq.TimePartitioning{
-		Type:                   "DAY",
-		ExpirationMs:           int64(p.Expiration / time.Millisecond),
-		Field:                  p.Field,
+		Type:         "DAY",
+		ExpirationMs: int64(p.Expiration / time.Millisecond),
+		Field:        p.Field,
 		RequirePartitionFilter: p.RequirePartitionFilter,
 	}
 }
@@ -182,8 +182,8 @@ func bqToTimePartitioning(q *bq.TimePartitioning) *TimePartitioning {
 		return nil
 	}
 	return &TimePartitioning{
-		Expiration:             time.Duration(q.ExpirationMs) * time.Millisecond,
-		Field:                  q.Field,
+		Expiration: time.Duration(q.ExpirationMs) * time.Millisecond,
+		Field:      q.Field,
 		RequirePartitionFilter: q.RequirePartitionFilter,
 	}
 }

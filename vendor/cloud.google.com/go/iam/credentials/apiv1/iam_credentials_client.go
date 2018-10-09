@@ -62,10 +62,10 @@ func defaultIamCredentialsCallOptions() *IamCredentialsCallOptions {
 		},
 	}
 	return &IamCredentialsCallOptions{
-		GenerateAccessToken:                retry[[2]string{"default", "idempotent"}],
-		GenerateIdToken:                    retry[[2]string{"default", "idempotent"}],
-		SignBlob:                           retry[[2]string{"default", "idempotent"}],
-		SignJwt:                            retry[[2]string{"default", "idempotent"}],
+		GenerateAccessToken: retry[[2]string{"default", "idempotent"}],
+		GenerateIdToken:     retry[[2]string{"default", "idempotent"}],
+		SignBlob:            retry[[2]string{"default", "idempotent"}],
+		SignJwt:             retry[[2]string{"default", "idempotent"}],
 		GenerateIdentityBindingAccessToken: retry[[2]string{"default", "idempotent"}],
 	}
 }
