@@ -25,11 +25,13 @@ var _ = Describe("Config", func() {
 				vcfcsConfig := config.GetConfig(&jsonConfigPath)
 				Expect(vcfcsConfig.ApiListenAddress).To(Equal("localhost:8000"))
 				Expect(vcfcsConfig.LogLevel).To(Equal("ERROR"))
+				Expect(vcfcsConfig.ShutdownTimeoutSeconds).To(Equal(10))
 			})
 			It("can read a YML config correctly", func() {
 				vcfcsConfig := config.GetConfig(&yamlConfigPath)
 				Expect(vcfcsConfig.ApiListenAddress).To(Equal("localhost:8001"))
 				Expect(vcfcsConfig.LogLevel).To(Equal("ERROR"))
+				Expect(vcfcsConfig.ShutdownTimeoutSeconds).To(Equal(10))
 			})
 		})
 		Context("a partial config with only listen address specified", func() {

@@ -1,2 +1,3 @@
 api_listen_addr: localhost:8001
 log_level: ERROR
+shutdown_timeout_seconds: 10
