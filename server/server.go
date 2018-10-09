@@ -55,7 +55,7 @@ func ListenAndServe(vcfcsConfig config.Configuration) {
 	<-quit
 	// Gracefully shutdown the server if it has not shutdown within 10 seconds then force it to shutdown
 	logger.Log.Info("received shutdown signal, shutting down the vault-cfcs api server")
-	ctx, cancel := context.WithTimeout(context.Background(), vcfcsConfig.ShutdownTimeoutSeconds*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(vcfcsConfig.ShutdownTimeoutSeconds)*time.Second)
 	defer cancel()
 	if err := e.Shutdown(ctx); err != nil {
 		logger.Log.Error(err)
