@@ -5,7 +5,6 @@ import (
 	. "github.com/onsi/gomega"
 	vcfcsTypes "github.com/zipcar/vault-cfcs/types"
 	fakes "github.com/zipcar/vault-cfcs/types/typesfakes"
-	"reflect"
 )
 
 var _ = Describe("Generic", func() {
@@ -14,14 +13,15 @@ var _ = Describe("Generic", func() {
 			It("parses a certificate request object", func() {
 				credential, err := vcfcsTypes.ParseGenericCredentialRequest([]byte(fakes.RegularCertRequestBody))
 				Expect(err).ToNot(HaveOccurred())
-				Expect(reflect.TypeOf(credential)).To(Equal(reflect.TypeOf((*vcfcsTypes.CertificateRequest)(nil))))
+				Expect(credential).To(BeAssignableToTypeOf((*vcfcsTypes.CertificateRequest)(nil)))
 
 				credential, err = vcfcsTypes.ParseGenericCredentialRequest([]byte(fakes.IntermediateCaRequestBody))
 				Expect(err).ToNot(HaveOccurred())
-				Expect(reflect.TypeOf(credential)).To(Equal(reflect.TypeOf((*vcfcsTypes.CertificateRequest)(nil))))
+				Expect(credential).To(BeAssignableToTypeOf((*vcfcsTypes.CertificateRequest)(nil)))
 
 				credential, err = vcfcsTypes.ParseGenericCredentialRequest([]byte(fakes.RootCaRequestBody))
-				Expect(reflect.TypeOf(credential)).To(Equal(reflect.TypeOf((*vcfcsTypes.CertificateRequest)(nil))))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(credential).To(BeAssignableToTypeOf((*vcfcsTypes.CertificateRequest)(nil)))
 			})
 		})
 
@@ -29,7 +29,7 @@ var _ = Describe("Generic", func() {
 			It("parses a password request object", func() {
 				credential, err := vcfcsTypes.ParseGenericCredentialRequest([]byte(fakes.PasswordPostRequestBody))
 				Expect(err).ToNot(HaveOccurred())
-				Expect(reflect.TypeOf(credential)).To(Equal(reflect.TypeOf((*vcfcsTypes.PasswordRequest)(nil))))
+				Expect(credential).To(BeAssignableToTypeOf((*vcfcsTypes.PasswordRequest)(nil)))
 			})
 		})
 
@@ -37,7 +37,7 @@ var _ = Describe("Generic", func() {
 			It("parses a ssh keypair object", func() {
 				credential, err := vcfcsTypes.ParseGenericCredentialRequest([]byte(fakes.SshKeypairRequestBody))
 				Expect(err).ToNot(HaveOccurred())
-				Expect(reflect.TypeOf(credential)).To(Equal(reflect.TypeOf((*vcfcsTypes.SshKeypairRequest)(nil))))
+				Expect(credential).To(BeAssignableToTypeOf((*vcfcsTypes.SshKeypairRequest)(nil)))
 			})
 		})
 
@@ -45,7 +45,7 @@ var _ = Describe("Generic", func() {
 			It("parses a rsa keypair object", func() {
 				credential, err := vcfcsTypes.ParseGenericCredentialRequest([]byte(fakes.RsaKeyPairRequestBody))
 				Expect(err).ToNot(HaveOccurred())
-				Expect(reflect.TypeOf(credential)).To(Equal(reflect.TypeOf((*vcfcsTypes.RsaKeypairRequest)(nil))))
+				Expect(credential).To(BeAssignableToTypeOf((*vcfcsTypes.RsaKeypairRequest)(nil)))
 			})
 		})
 	})

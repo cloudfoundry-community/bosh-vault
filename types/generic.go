@@ -12,8 +12,12 @@ type GenericCredentialPostRequest struct {
 	Parameters json.RawMessage `json:"parameters, omitempty"`
 }
 
+type GenericCredentialResponse interface {
+	JsonString() string
+}
+
 type GenericCredentialRequest interface {
-	Generate() error
+	Generate() (GenericCredentialResponse, error)
 	Validate() bool
 	CredentialType() string
 }

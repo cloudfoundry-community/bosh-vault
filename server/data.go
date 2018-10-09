@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"github.com/labstack/echo"
 	vcfcsTypes "github.com/zipcar/vault-cfcs/types"
 	"io/ioutil"
@@ -28,20 +29,17 @@ func dataPostHandler(ctx echo.Context) error {
 	ok := credentialRequest.Validate()
 	if !ok {
 		context.Log.Error("invalid credential request for ", credentialType)
-		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, "invalid credential request for ", credentialType))
+		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid credential request for %s", credentialType)))
 		return err
 	}
 
 	context.Log.Debugf("attempting to generate %s", credentialType)
 
-	err = credentialRequest.Generate()
+	credential, err := credentialRequest.Generate()
 	if err != nil {
 		context.Log.Error(err)
-		ctx.Error(echo.NewHTTPError(http.StatusInternalServerError, "problem generating ", credentialType, err))
+		ctx.Error(echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("problem generating %s: %s", credentialType, err)))
 	}
 
-	return ctx.JSON(http.StatusOK, &map[string]interface{}{
-		"status":      http.StatusOK,
-		"status_text": http.StatusText(http.StatusOK),
-	})
+	return ctx.JSON(http.StatusOK, &credential)
 }
