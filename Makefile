@@ -14,7 +14,7 @@ build: fmt ## Builds the binary
 
 .PHONY: run
 run: build local-certs ## Runs the binary (also builds)
-	./bin/vault-cfcs
+	./bin/vault-cfcs -config local-dev/config/local-dev.yml
 
 .PHONY: fmt
 fmt: ## Runs gofmt on the entire project
@@ -28,15 +28,19 @@ bin/blite:
 	@curl -o bin/blite https://raw.githubusercontent.com/Zipcar/blite/master/blite
 
 .PHONY: bosh-lite
-bosh-lite: bin/blite certs/local-dev.crt vars/local-dev-vars.yml ## Spin up a local bosh director with UAA that is ready to communicate with the local binary
+bosh-lite: bin/blite local-certs local-vars ## Spin up a local bosh director with UAA that is ready to communicate with the local binary
 	./tasks/bootstrap-local-director
 
-vars-files: manifests/local-dev-vars.yml
+local-vars: local-dev/vars/local-dev-vars.yml
 
-vars/local-dev-vars.yml:
+local-dev/vars/local-dev-vars.yml:
 	./tasks/generate-local-dev-vars-file
 
-local-certs: certs/local-dev.crt
+local-certs: local-dev/certs/local-dev.crt
 
-certs/local-dev.crt:
+local-dev/certs/local-dev.crt:
 	./tasks/generate-local-dev-certs
+
+destroy: ## Burns down local dev environment
+	blite destroy
+	rm -r ./local-dev/*

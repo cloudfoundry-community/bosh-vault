@@ -2,10 +2,10 @@
 
 SCRIPT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-CERTS_PATH=${SCRIPT_PATH}/../certs
+CERTS_PATH=${SCRIPT_PATH}/../local-dev/certs
 mkdir -p ${CERTS_PATH}
 
-LOCAL_DEV_VARS_DIR="${SCRIPT_PATH}/../vars"
+LOCAL_DEV_VARS_DIR="${SCRIPT_PATH}/../local-dev/vars"
 mkdir -p ${LOCAL_DEV_VARS_DIR}
 VARS_NAME="local-dev-vars.yml"
 LOCAL_DEV_VARS_PATH=${LOCAL_DEV_VARS_DIR}/${VARS_NAME}

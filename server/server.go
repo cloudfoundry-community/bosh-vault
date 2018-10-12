@@ -42,10 +42,14 @@ func ListenAndServe(vcfcsConfig config.Configuration) {
 	e.POST("/v1/data", dataPostHandler)
 	e.GET("/v1/data/:id", dataGetByIdHandler)
 
+	if vcfcsConfig.TlsCertPath == "" || vcfcsConfig.TlsKeyPath == "" {
+		logger.Log.Fatal("unable to start vault-cfcs without tls_cert_path and tls_key_path being set")
+	}
+
 	// Start server
 	go func() {
 		logger.Log.Infof("starting vault-cfcs api server at %s", vcfcsConfig.ApiListenAddress)
-		if err := e.StartTLS(vcfcsConfig.ApiListenAddress, "certs/local-dev.crt", "certs/local-dev.key"); err != nil {
+		if err := e.StartTLS(vcfcsConfig.ApiListenAddress, vcfcsConfig.TlsCertPath, vcfcsConfig.TlsKeyPath); err != nil {
 			logger.Log.Info("shutting down the vault-cfcs api server")
 		}
 	}()

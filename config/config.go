@@ -13,6 +13,8 @@ type Configuration struct {
 	ApiListenAddress       string `json:"api_listen_addr" yaml:"api_listen_addr"`
 	LogLevel               string `json:"log_level" yaml:"log_level"`
 	ShutdownTimeoutSeconds int    `json:"shutdown_timeout_seconds" yaml:"shutdown_timeout_seconds"`
+	TlsCertPath            string `json:"tls_cert_path" yaml:"tls_cert_path"`
+	TlsKeyPath             string `json:"tls_key_path" yaml:"tls_key_path"`
 }
 
 func GetConfig(configFilePath *string) Configuration {
