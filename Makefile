@@ -13,7 +13,7 @@ build: fmt ## Builds the binary
 	@go build -o bin/vault-cfcs
 
 .PHONY: run
-run: build ## Runs the binary (also builds)
+run: build local-certs ## Runs the binary (also builds)
 	./bin/vault-cfcs
 
 .PHONY: fmt
@@ -26,3 +26,17 @@ test: init fmt ## Runs all test suites with ginkgo
 
 bin/blite:
 	@curl -o bin/blite https://raw.githubusercontent.com/Zipcar/blite/master/blite
+
+.PHONY: bosh-lite
+bosh-lite: bin/blite certs/local-dev.crt vars/local-dev-vars.yml ## Spin up a local bosh director with UAA that is ready to communicate with the local binary
+	./tasks/bootstrap-local-director
+
+vars-files: manifests/local-dev-vars.yml
+
+vars/local-dev-vars.yml:
+	./tasks/generate-local-dev-vars-file
+
+local-certs: certs/local-dev.crt
+
+certs/local-dev.crt:
+	./tasks/generate-local-dev-certs

@@ -5,7 +5,7 @@ import (
 	"github.com/micro/go-config/source/file"
 )
 
-const DefaultApiListenAddress = "localhost:1337"
+const DefaultApiListenAddress = "0.0.0.0:1337"
 const DefaultLogLevel = "DEBUG"
 const DefaultShutdownTimeoutSeconds = 30
 

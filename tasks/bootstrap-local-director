@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+SCRIPT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source ${SCRIPT_PATH}/.shared
+
+export BOSH_DEPLOYMENT_VERSION_HASH=d59edb4d895af0830f0cdee0caf3d7dbbe73b3d9
+export BLITE_OPS_FILE_GLOB=./manifests/operators/*-local-dev-*.yml
+export BLITE_VARS_FILE_GLOB=${LOCAL_DEV_VARS_PATH}
+
+blite create
+
+eval $(blite env-eval)
+
+blite cloud-config
+bosh -n upload-stemcell https://s3.amazonaws.com/bosh-core-stemcells/warden/bosh-stemcell-3469.1-warden-boshlite-ubuntu-trusty-go_agent.tgz --sha1 6f1244d02e2f554fa57763f07a2707da373b18aa

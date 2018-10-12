@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# We generate these certs manually instead of with Bosh purely so that it's easier for people to have access to the raw files
+# since during local development they might be needed for other would be clients besides the bosh director itself.
+
+SCRIPT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source ${SCRIPT_PATH}/.shared
+
+# Check that the 'openssl' command exists
+if ! type "openssl" > /dev/null; then
+  echo "openssl command does not exist, this is needed to generate certs"
+  exit 1
+fi
+
+openssl genrsa -out ${CERTS_PATH}/${x509_NAME}.key 2048
+openssl req -new -sha256 -key ${CERTS_PATH}/${x509_NAME}.key -subj "/C=US/ST=MA/O=Dat Company/CN=$HOST_IP" -out ${CERTS_PATH}/${x509_NAME}.csr
+openssl x509 -req -days 365 -in ${CERTS_PATH}/${x509_NAME}.csr -signkey ${CERTS_PATH}/${x509_NAME}.key -out ${CERTS_PATH}/${x509_NAME}.crt

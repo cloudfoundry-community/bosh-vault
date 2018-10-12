@@ -13,7 +13,8 @@ The Vault Cloudfoundry Config Server is meant to be run alongside Vault and prox
 
 ![high level architecture diagram](docs/diagrams/high-level-architecture.jpg)
 
-# Contributing
+# Contributing/Developer Workflow
  1. Clone this repo into `$GOPATH/src/github.com/zipcar/vault-cfcs`
  1. Run `make` to see the available workflow commands.
  1. Run `make test` and `make run` to get things running locally.
+ 1. (optional) Run `make bosh-lite` to spin up a local director in virtualbox (uses [blite](https://github.com/Zipcar/blite)) that is configured to use a locally running `vault-cfcs` binary on port `1337` as a config server.

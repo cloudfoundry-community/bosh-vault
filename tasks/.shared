@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+SCRIPT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+CERTS_PATH=${SCRIPT_PATH}/../certs
+mkdir -p ${CERTS_PATH}
+
+LOCAL_DEV_VARS_DIR="${SCRIPT_PATH}/../vars"
+mkdir -p ${LOCAL_DEV_VARS_DIR}
+VARS_NAME="local-dev-vars.yml"
+LOCAL_DEV_VARS_PATH=${LOCAL_DEV_VARS_DIR}/${VARS_NAME}
+
+MANIFESTS_PATH=${SCRIPT_PATH}/../manifests
+x509_NAME="local-dev"
+
+# Check that the 'ip' command exists (it doesn't exist on macs by default)
+if ! type "ip" > /dev/null; then
+  echo "ip command does not exist, this is needed to generate certs and configurations"
+  echo "If you are on Mac OSX consider running brew install iproute2mac"
+  exit 1
+fi
+
+# expecting output like this: 1.0.0.0 via 192.168.7.1 dev wlp2s0  src 192.168.7.30
+# will parse the address after src. Not using awk since some systems output slightly different formats
+HOST_IP=$(ip route get 1 | sed 's/^.*src \([^ ]*\).*$/\1/;q')

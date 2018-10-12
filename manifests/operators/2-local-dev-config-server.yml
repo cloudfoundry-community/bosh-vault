@@ -1,0 +1,32 @@
+- type: replace
+  path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/clients/director_config_server?
+  value:
+    override: true
+    authorized-grant-types: client_credentials
+    scope: ""
+    authorities: config_server.admin
+    secret: ((director_config_server_client_secret))
+
+- type: replace
+  path: /instance_groups/name=bosh/properties/director/config_server?
+  value:
+    enabled: true
+    url: ((vault_cfcs_addr))
+    ca_cert: ((vault_cfcs_ca))
+
+    uaa:
+      url: "https://((internal_ip)):8443"
+      ca_cert: ((uaa_ssl.ca))
+      client_id: director_config_server
+      client_secret: ((director_config_server_client_secret))
+
+# set a vcap password to a known value (c1oudc0w) so folks can ssh onto the director and read logs easily
+- type: replace
+  path: /resource_pools/0/env/bosh/password
+  value: $6$4gDD3aV0rdqlrKC$2axHCxGKIObs6tAmMTqYCspcdvQXh3JJcvWOY2WGb4SrdXtnCyNaWlrf3WEqvYR2MYizEGp3kMmbpwBC6jsHt0 #c1oudc0w
+
+- type: replace
+  path: /variables/-
+  value:
+    name: director_config_server_client_secret
+    type: password
