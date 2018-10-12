@@ -43,4 +43,5 @@ local-dev/certs/local-dev.crt:
 
 destroy: ## Burns down local dev environment
 	blite destroy
-	rm -r ./local-dev/*
+	rm -r ./local-dev/certs/*
+	rm -r ./local-dev/vars/*
