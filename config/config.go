@@ -6,7 +6,7 @@ import (
 )
 
 const DefaultApiListenAddress = "0.0.0.0:1337"
-const DefaultLogLevel = "DEBUG"
+const DefaultLogLevel = "ERROR"
 const DefaultShutdownTimeoutSeconds = 30
 
 type Configuration struct {
