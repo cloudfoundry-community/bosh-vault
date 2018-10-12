@@ -40,11 +40,12 @@ func ListenAndServe(vcfcsConfig config.Configuration) {
 
 	e.GET("/v1/health", healthHandler)
 	e.POST("/v1/data", dataPostHandler)
+	e.GET("/v1/data/:id", dataGetByIdHandler)
 
 	// Start server
 	go func() {
 		logger.Log.Infof("starting vault-cfcs api server at %s", vcfcsConfig.ApiListenAddress)
-		if err := e.Start(vcfcsConfig.ApiListenAddress); err != nil {
+		if err := e.StartTLS(vcfcsConfig.ApiListenAddress, "certs/local-dev.crt", "certs/local-dev.key"); err != nil {
 			logger.Log.Info("shutting down the vault-cfcs api server")
 		}
 	}()

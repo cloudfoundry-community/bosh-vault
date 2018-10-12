@@ -8,6 +8,22 @@ import (
 	"net/http"
 )
 
+func dataGetByIdHandler(ctx echo.Context) error {
+	context := ctx.(*ConfigurationContext)
+	id := ctx.Param("id")
+	if id == "" {
+		// this should never happen because of echo's router
+		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, "id uri param not passed to data/:id handler"))
+	}
+	context.Log.Debugf("request to /v1/data/%s", id)
+
+	return ctx.JSONBlob(http.StatusOK, []byte(fmt.Sprintf(`{
+		"id":    "%s",
+		"name":  "credential",
+		"value": "credential123"
+		}`, id)))
+}
+
 func dataPostHandler(ctx echo.Context) error {
 	context := ctx.(*ConfigurationContext)
 	requestBody, err := ioutil.ReadAll(ctx.Request().Body)
