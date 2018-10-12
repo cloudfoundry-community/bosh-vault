@@ -1,0 +1,43 @@
+---
+name: redis
+
+instance_groups:
+- name: redis
+  azs:
+  - z1
+  instances: 1
+  vm_type: default
+  stemcell: default
+  persistent_disk_type: default
+  networks:
+  - name: default
+  jobs:
+  - name: redis
+    release: redis
+    properties:
+      listen_address: 0.0.0.0
+      password: ((redis_password))
+      append_only:
+        enabled: "yes"
+
+variables:
+- name: redis_password
+  type: password
+
+update:
+  canaries: 1
+  max_in_flight: 32
+  canary_watch_time: 1000-100000
+  update_watch_time: 1000-100000
+  serial: false
+
+stemcells:
+- alias: default
+  os: ubuntu-trusty
+  version: latest
+
+releases:
+- name: redis
+  version: 1
+  url: https://github.com/frodenas/redis-boshrelease/releases/download/v1/redis-1.tgz
+  sha1: 3944d07b9daf5c15d2e60722f39d0ec743c45fb1
