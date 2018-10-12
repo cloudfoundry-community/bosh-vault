@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"github.com/labstack/echo"
 	vcfcsTypes "github.com/zipcar/vault-cfcs/types"
@@ -8,12 +9,30 @@ import (
 	"net/http"
 )
 
+func dataGetByNameHandler(ctx echo.Context) error {
+	context := ctx.(*ConfigurationContext)
+	name := ctx.QueryParam("name")
+	if name == "" {
+		// this should never happen because of echo's router
+		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, "name query param not passed to data?name handler"))
+		return errors.New("name query param not passed to data?name handler")
+	}
+	context.Log.Debugf("request to /v1/data?name=%s", name)
+
+	return ctx.JSONBlob(http.StatusOK, []byte(fmt.Sprintf(`{
+		"id":    "1337",
+		"name":  "%s",
+		"value": "credential123"
+		}`, name)))
+}
+
 func dataGetByIdHandler(ctx echo.Context) error {
 	context := ctx.(*ConfigurationContext)
 	id := ctx.Param("id")
 	if id == "" {
 		// this should never happen because of echo's router
 		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, "id uri param not passed to data/:id handler"))
+		return errors.New("id uri param not passed to data/:id handler")
 	}
 	context.Log.Debugf("request to /v1/data/%s", id)
 
