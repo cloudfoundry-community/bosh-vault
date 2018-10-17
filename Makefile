@@ -25,11 +25,16 @@ test: init fmt ## Runs all test suites with ginkgo
 	@ginkgo -v -p --randomizeAllSpecs --randomizeSuites --succinct * */* */*/*
 
 bin/blite:
+	@mkdir bin
 	@curl -o bin/blite https://raw.githubusercontent.com/Zipcar/blite/master/blite
+	@chmod +x bin/blite
 
 .PHONY: bosh-lite
 bosh-lite: bin/blite local-certs local-vars ## Spin up a local bosh director with UAA that is ready to communicate with the local binary
 	./tasks/bootstrap-local-director
+
+test-deploy-redis: bosh-lite ## Creates a bosh lite director if one doesn't exist and tries to deploy redis with a generated password.
+	./tasks/test-deploy-redis
 
 local-vars: local-dev/vars/local-dev-vars.yml
 
@@ -42,6 +47,7 @@ local-dev/certs/local-dev.crt:
 	./tasks/generate-local-dev-certs
 
 destroy: ## Burns down local dev environment
-	blite destroy
 	rm -r ./local-dev/certs/*
 	rm -r ./local-dev/vars/*
+	blite destroy
+	pkill vault-cfcs
