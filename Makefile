@@ -25,7 +25,7 @@ test: init fmt ## Runs all test suites with ginkgo
 	@ginkgo -v -p --randomizeAllSpecs --randomizeSuites --succinct * */* */*/*
 
 bin/blite:
-	@mkdir bin
+	@mkdir -p bin
 	@curl -o bin/blite https://raw.githubusercontent.com/Zipcar/blite/master/blite
 	@chmod +x bin/blite
 
