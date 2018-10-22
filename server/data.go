@@ -36,6 +36,8 @@ func dataGetByIdHandler(ctx echo.Context) error {
 	}
 	context.Log.Debugf("request to /v1/data/%s", id)
 
+	context.Log.Debugf("headers: %v", ctx.Request().Header)
+
 	return ctx.JSONBlob(http.StatusOK, []byte(fmt.Sprintf(`{
 		"id":    "%s",
 		"name":  "credential",

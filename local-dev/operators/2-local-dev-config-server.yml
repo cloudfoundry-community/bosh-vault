@@ -4,7 +4,7 @@
     override: true
     authorized-grant-types: client_credentials
     scope: ""
-    authorities: config_server.admin
+    authorities: config_server.admin, uaa.resource
     secret: ((director_config_server_client_secret))
 
 - type: replace
