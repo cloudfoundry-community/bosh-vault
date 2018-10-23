@@ -14,7 +14,7 @@ build: fmt ## Builds the binary
 
 .PHONY: run
 run: build local-certs ## Runs the binary (also builds)
-	./bin/vault-cfcs -config local-dev/config/local-dev.yml
+	./tasks/run-local-binary
 
 .PHONY: fmt
 fmt: ## Runs gofmt on the entire project

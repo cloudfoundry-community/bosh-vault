@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/micro/go-config"
+	"github.com/micro/go-config/source/env"
 	"github.com/micro/go-config/source/file"
 )
 
@@ -13,8 +14,15 @@ type Configuration struct {
 	ApiListenAddress       string `json:"api_listen_addr" yaml:"api_listen_addr"`
 	LogLevel               string `json:"log_level" yaml:"log_level"`
 	ShutdownTimeoutSeconds int    `json:"shutdown_timeout_seconds" yaml:"shutdown_timeout_seconds"`
-	TlsCertPath            string `json:"tls_cert_path" yaml:"tls_cert_path"`
-	TlsKeyPath             string `json:"tls_key_path" yaml:"tls_key_path"`
+	Tls                    struct {
+		Cert string `json:"cert" yaml:"key"`
+		Key  string `json:"key" yaml:"key"`
+	}
+	Uaa struct {
+		Address  string `json:"address" yaml:"address"`
+		Username string `json:"username" yaml:"username"`
+		Password string `json:"password" yaml:"password"`
+	} `json:"uaa" yaml:"uaa"`
 }
 
 func GetConfig(configFilePath *string) Configuration {
@@ -29,7 +37,8 @@ func GetConfig(configFilePath *string) Configuration {
 		conf := config.NewConfig()
 		conf.Load(file.NewSource(
 			file.WithPath(*configFilePath),
-		))
+		),
+			env.NewSource(env.WithStrippedPrefix("VAULT_CFCS")))
 		conf.Scan(&vcfcsConfig)
 		return vcfcsConfig
 	}

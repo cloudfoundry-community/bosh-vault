@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+SCRIPT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source ${SCRIPT_PATH}/.shared
+
+BLITE=${SCRIPT_PATH}/../bin/blite
+
+DIRECTOR_IP=$(${BLITE} networking | grep BLITE_DIRECTOR_IP | awk '{print $2}')
+
+VAULT_CFCS_UAA_ADDRESS=https://${DIRECTOR_IP}:8443 ./bin/vault-cfcs -config local-dev/config/local-dev.yml

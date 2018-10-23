@@ -30,5 +30,6 @@ func main() {
 
 	logger.InitializeLogger(vcfcsConfig)
 	logger.Log.Infof("Hello world. I am vault-cfcs version %s", version.Version)
+	logger.Log.Debugf("Config: %+v", vcfcsConfig)
 	server.ListenAndServe(vcfcsConfig)
 }
