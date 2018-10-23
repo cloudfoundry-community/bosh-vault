@@ -700,14 +700,6 @@
 			"notests": true
 		},
 		{
-			"importpath": "github.com/gbrlsnchs/jwt",
-			"repository": "https://github.com/gbrlsnchs/jwt",
-			"vcs": "git",
-			"revision": "88430b27f0439edf83d1affca2ada510a1c20173",
-			"branch": "master",
-			"notests": true
-		},
-		{
 			"importpath": "github.com/ghodss/yaml",
 			"repository": "https://github.com/ghodss/yaml",
 			"vcs": "git",
