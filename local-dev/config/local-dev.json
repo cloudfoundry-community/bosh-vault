@@ -1,0 +1,15 @@
+{
+  "api_listen_addr": "0.0.0.0:1337",
+  "log_level": "DEBUG",
+  "shutdown_timeout_seconds": 10,
+  "tls": {
+    "cert": "./local-dev/certs/local-dev.crt",
+    "key": "./local-dev/certs/local-dev.key"
+  },
+  "uaa": {
+    "username": "director_config_server",
+    "password": "testing-vault-cfcs",
+    "ca": "./local-dev/certs/local-dev-director-ca.crt",
+    "skipverify": false
+  }
+}

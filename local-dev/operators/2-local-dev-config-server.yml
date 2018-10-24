@@ -18,7 +18,7 @@
       url: "https://((internal_ip)):8443"
       ca_cert: ((uaa_ssl.ca))
       client_id: director_config_server
-      client_secret: ((director_config_server_client_secret))
+      client_secret: testing-vault-cfcs
 
 # set a vcap password to a known value (c1oudc0w) so folks can ssh onto the director and read logs easily
 - type: replace

@@ -13,7 +13,7 @@ build: fmt ## Builds the binary
 	@go build -o bin/vault-cfcs
 
 .PHONY: run
-run: build local-certs ## Runs the binary (also builds)
+run: build ## Builds and runs the binary using local-dev settings (requires running bosh-lite setup)
 	./tasks/run-local-binary
 
 .PHONY: fmt
@@ -33,7 +33,7 @@ bin/blite:
 bosh-lite: bin/blite local-certs local-vars ## Spin up a local bosh director with UAA that is ready to communicate with the local binary
 	./tasks/bootstrap-local-director
 
-test-deploy-redis: bosh-lite ## Creates a bosh lite director if one doesn't exist and tries to deploy redis with a generated password.
+test-deploy-redis: ## Tries to deploy redis with a generated password on the bosh-lite director
 	./tasks/test-deploy-redis
 
 local-vars: local-dev/vars/local-dev-vars.yml

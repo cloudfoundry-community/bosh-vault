@@ -4,6 +4,7 @@ SCRIPT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 CERTS_PATH=${SCRIPT_PATH}/../local-dev/certs
 mkdir -p ${CERTS_PATH}
+DIRECTOR_CA_CERT_PATH=${CERTS_PATH}/local-dev-director-ca.crt
 
 LOCAL_DEV_VARS_DIR="${SCRIPT_PATH}/../local-dev/vars"
 mkdir -p ${LOCAL_DEV_VARS_DIR}

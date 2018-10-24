@@ -7,7 +7,11 @@
     "key": "./local-dev/certs/local-dev.key"
   },
   "uaa": {
+    "address": "https://uaa.biz:8443",
     "username": "director_config_server",
-    "password": "testing-vault-cfcs"
+    "password": "testing-vault-cfcs",
+    "timeout": 10,
+    "ca": "./local-dev/certs/local-dev-director-ca.crt",
+    "skipverify": false
   }
 }

@@ -9,6 +9,7 @@ import (
 const DefaultApiListenAddress = "0.0.0.0:1337"
 const DefaultLogLevel = "ERROR"
 const DefaultShutdownTimeoutSeconds = 30
+const DefaultUaaConnectionTimeoutSeconds = 10
 
 type Configuration struct {
 	ApiListenAddress       string `json:"api_listen_addr" yaml:"api_listen_addr"`
@@ -17,11 +18,14 @@ type Configuration struct {
 	Tls                    struct {
 		Cert string `json:"cert" yaml:"key"`
 		Key  string `json:"key" yaml:"key"`
-	}
+	} `json:"tls" yaml:"tls"`
 	Uaa struct {
-		Address  string `json:"address" yaml:"address"`
-		Username string `json:"username" yaml:"username"`
-		Password string `json:"password" yaml:"password"`
+		Address    string `json:"address" yaml:"address"`
+		Username   string `json:"username" yaml:"username"`
+		Password   string `json:"password" yaml:"password"`
+		Timeout    int    `json:"timeout" yaml:"timeout"`
+		Ca         string `json:"ca" yaml:"ca"`
+		SkipVerify bool   `json:"skipverify" yaml:"skipverify"`
 	} `json:"uaa" yaml:"uaa"`
 }
 
@@ -30,6 +34,7 @@ func GetConfig(configFilePath *string) Configuration {
 	vcfcsConfig.ApiListenAddress = DefaultApiListenAddress
 	vcfcsConfig.LogLevel = DefaultLogLevel
 	vcfcsConfig.ShutdownTimeoutSeconds = DefaultShutdownTimeoutSeconds
+	vcfcsConfig.Uaa.Timeout = DefaultUaaConnectionTimeoutSeconds
 
 	if configFilePath == nil || *configFilePath == "" {
 		return vcfcsConfig

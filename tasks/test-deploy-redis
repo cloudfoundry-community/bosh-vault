@@ -8,4 +8,9 @@ BLITE=${SCRIPT_PATH}/../bin/blite
 
 eval $(${BLITE} env-eval)
 
+if [ -z "$(${BLITE} status | grep running)" ]; then
+  echo "There doesn't seem to be a blite director running. Run make run or make bosh-lite before running this command."
+  exit 1
+fi
+
 bosh -d redis deploy ${SCRIPT_PATH}/../local-dev/test-manifests/redis.yml

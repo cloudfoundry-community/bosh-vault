@@ -19,7 +19,11 @@ We do not yet use modules but will convert to them once they are more widely ado
 
  1. Clone this repo into `$GOPATH/src/github.com/zipcar/vault-cfcs`
  1. Run `make` to see the available workflow commands.
- 1. Run `make test` and `make run` to get things running locally.
+ 1. Run `make test` to run tests locally.
+
+## Testing with a preexisting Bosh director or no Bosh director
+ 1. Run `make build`
+ 1. Use the available configuration options to write a custom configuration file (JSON or YAML) and pass it to the built binary via the `-config` flag
  
 ## Testing with a local Bosh director
 To simplify the developer workflow this project relies on a tool called `blite` that makes it easy to get a bosh-lite 
@@ -32,12 +36,13 @@ do anything you'd otherwise be able to do with a bosh director. Resources used t
 director are in the `local-dev` directory.
 
 ### Option 1: All-In-One Test Deploys
- 1. Make sure your binary is already running in another terminal window using `make run`
- 1. Run `make test-deploy-redis` to spin up a local director configured to talk with the locally running vault-cfcs binary if one doesn't exist and deploy redis using a generated password
+ 1. Run `make bosh-lite` to setup a local bosh-lite director running UAA and configured to communicate with a local vault-cfcs binary
+ 1. Run `make run` to start the config server
+ 1. Run `make test-deploy-redis` to deploy redis using a generated password
  
 ### Option 2: Just The Director
- 1. Make sure your binary is already running in another terminal window using `make run`
- 1. Run `make bosh-lite` to spin up a local director configured to talk with the locally running vault-cfcs binary
+ 1. Run `make bosh-lite` to setup a local bosh-lite director running UAA and configured to communicate with a local vault-cfcs binary
+ 1. Run `make run` to start the config server
  1. Run `eval $(./bin/blite env-eval)` to seed your terminal's environment with the credentials of your local bosh director so you can use standard `bosh` commands
  
 ### Option 3: Blite/vault-cfcs Power User
@@ -59,7 +64,7 @@ say from a VPN connection, new wifi network, etc. For the moment the best way to
 and then start over with one of the local Bosh director options specified above. It should only take a few minutes to spin up 
 a new director with fresh certs. 
 
-For the brave, it is possible to manually fix cert mismatch problems by deleting everything in `local-dev/certs`, running 
+For the brave, it is possible to manually fix cert mismatch problems by deleting in `local-dev/certs/local-dev.*`, running 
 `make local-certs` to generate new ones, replacing `/var/vcap/jobs/director/config/config_server_ca.cert` and running 
 `monit restart all` on the director then restarting vault-cfcs with `make run` but it's probably a better idea to just 
 destroy and recreate, it's fast and less error prone. Note that if you're reusing a shell session you may need to re-run

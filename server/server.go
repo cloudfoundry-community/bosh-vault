@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/sirupsen/logrus"
+	"github.com/zipcar/vault-cfcs/auth"
 	"github.com/zipcar/vault-cfcs/config"
 	"github.com/zipcar/vault-cfcs/logger"
 	"golang.org/x/net/context"
@@ -12,10 +13,11 @@ import (
 	"time"
 )
 
-type ConfigurationContext struct {
+type VcfcsContext struct {
 	echo.Context
-	Config config.Configuration
-	Log    *logrus.Logger
+	Config    config.Configuration
+	Log       *logrus.Logger
+	UaaClient auth.UaaClient
 }
 
 func ListenAndServe(vcfcsConfig config.Configuration) {
@@ -24,13 +26,22 @@ func ListenAndServe(vcfcsConfig config.Configuration) {
 	e.HideBanner = true
 	e.HidePort = true
 
-	// middleware function that sets a custom context exposing our configuration and logger to handler functions
+	uaaClient := auth.GetUaaClient(vcfcsConfig)
+
+	// Support UAA Authorization (and broad authentication for now too)
+	// Will allow connections if JWT contains the expected audience claim
+	e.Use(uaaClient.AuthMiddleware())
+
+	e.Use(middleware.Secure())
+
+	// middleware function that sets a custom context exposing our configuration, logger, and a UAA client to handler functions
 	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			configContext := &ConfigurationContext{
-				Context: c,
-				Config:  vcfcsConfig,
-				Log:     logger.Log,
+			configContext := &VcfcsContext{
+				Context:   c,
+				Config:    vcfcsConfig,
+				Log:       logger.Log,
+				UaaClient: uaaClient,
 			}
 			return h(configContext)
 		}

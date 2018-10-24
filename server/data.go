@@ -10,7 +10,7 @@ import (
 )
 
 func dataGetByNameHandler(ctx echo.Context) error {
-	context := ctx.(*ConfigurationContext)
+	context := ctx.(*VcfcsContext)
 	name := ctx.QueryParam("name")
 	if name == "" {
 		// this should never happen because of echo's router
@@ -27,7 +27,7 @@ func dataGetByNameHandler(ctx echo.Context) error {
 }
 
 func dataGetByIdHandler(ctx echo.Context) error {
-	context := ctx.(*ConfigurationContext)
+	context := ctx.(*VcfcsContext)
 	id := ctx.Param("id")
 	if id == "" {
 		// this should never happen because of echo's router
@@ -35,8 +35,6 @@ func dataGetByIdHandler(ctx echo.Context) error {
 		return errors.New("id uri param not passed to data/:id handler")
 	}
 	context.Log.Debugf("request to /v1/data/%s", id)
-
-	context.Log.Debugf("headers: %v", ctx.Request().Header)
 
 	return ctx.JSONBlob(http.StatusOK, []byte(fmt.Sprintf(`{
 		"id":    "%s",
@@ -46,7 +44,7 @@ func dataGetByIdHandler(ctx echo.Context) error {
 }
 
 func dataPostHandler(ctx echo.Context) error {
-	context := ctx.(*ConfigurationContext)
+	context := ctx.(*VcfcsContext)
 	requestBody, err := ioutil.ReadAll(ctx.Request().Body)
 	if err != nil {
 		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, err))
