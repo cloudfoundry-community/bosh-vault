@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/zipcar/vault-cfcs/auth"
 	"github.com/zipcar/vault-cfcs/config"
+	"github.com/zipcar/vault-cfcs/health"
 	"github.com/zipcar/vault-cfcs/logger"
 	"golang.org/x/net/context"
 	"os"
@@ -32,8 +33,6 @@ func ListenAndServe(vcfcsConfig config.Configuration) {
 	// Will allow connections if JWT contains the expected audience claim
 	e.Use(uaaClient.AuthMiddleware())
 
-	e.Use(middleware.Secure())
-
 	// middleware function that sets a custom context exposing our configuration, logger, and a UAA client to handler functions
 	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -49,7 +48,8 @@ func ListenAndServe(vcfcsConfig config.Configuration) {
 
 	e.Use(middleware.Secure())
 
-	e.GET("/v1/health", healthHandler)
+	e.GET(health.HealthCheckUri, health.HealthCheckHandler)
+
 	e.POST("/v1/data", dataPostHandler)
 	e.GET("/v1/data/:id", dataGetByIdHandler)
 	e.GET("/v1/data", dataGetByNameHandler)
