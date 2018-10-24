@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/zipcar/vault-cfcs/config"
+	"github.com/zipcar/vault-cfcs/health"
 	"github.com/zipcar/vault-cfcs/logger"
 	"io/ioutil"
 	"log"
@@ -146,6 +147,10 @@ func (uaa *UaaClient) AuthMiddleware() echo.MiddlewareFunc {
 		SigningKey:    publicKey,
 		SigningMethod: uaa.SigningKeyData.Alg,
 		AuthScheme:    UaaAuthScheme,
+		Skipper: func(c echo.Context) bool {
+			// don't require authentication for the health checking endpoint
+			return c.Request().RequestURI == health.HealthCheckUri
+		},
 		// JWT middleware handles basic validity checks, this successhandler is our custom audience check since UAA
 		// returns a []string for the aud claim so single users can access multiple resources, the consequence is we can't
 		// use the built in methods of the JWT middleware to validate the audience for us since we don't know what additional
