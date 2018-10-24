@@ -17,7 +17,7 @@ type VcfcsContext struct {
 	echo.Context
 	Config    config.Configuration
 	Log       *logrus.Logger
-	UaaClient auth.UaaClient
+	UaaClient *auth.UaaClient
 }
 
 func ListenAndServe(vcfcsConfig config.Configuration) {

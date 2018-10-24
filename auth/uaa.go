@@ -19,13 +19,19 @@ import (
 
 const UaaAuthScheme = "bearer" // uaa doesn't use "Bearer" (the JWT default), but "bearer"
 const UaaExpectedAudience = "config_server"
+const UaaSigningKeyRefreshInterval = 24 * time.Hour // get updated key information once a day
 
 type UaaClient struct {
-	CheckTokenEndpoint string
-	TokenKeyEndpoint   string
-	Username           string
-	Password           string
-	httpClient         *http.Client
+	Endpoints      *UaaEndpoints
+	Username       string
+	Password       string
+	httpClient     *http.Client
+	SigningKeyData TokenKeyResponse
+}
+
+type UaaEndpoints struct {
+	CheckToken string
+	TokenKey   string
 }
 
 // @see: http://docs.cloudfoundry.org/api/uaa/version/release-candidate/#token-key-s
@@ -39,7 +45,7 @@ type TokenKeyResponse struct {
 	E     string `json:"e"`
 }
 
-func GetUaaClient(vcfcsConfig config.Configuration) UaaClient {
+func GetUaaClient(vcfcsConfig config.Configuration) *UaaClient {
 
 	// Get the SystemCertPool, continue with an empty pool on error
 	rootCAs, _ := x509.SystemCertPool()
@@ -66,57 +72,79 @@ func GetUaaClient(vcfcsConfig config.Configuration) UaaClient {
 
 	// Setup a custom transport that trusts our UAA Ca as well as the system's trusted certs
 	customTransport := &http.Transport{TLSClientConfig: tlsConfig}
-
-	return UaaClient{
-		Username:           vcfcsConfig.Uaa.Username,
-		Password:           vcfcsConfig.Uaa.Password,
-		CheckTokenEndpoint: fmt.Sprintf("%s/check_token", vcfcsConfig.Uaa.Address),
-		TokenKeyEndpoint:   fmt.Sprintf("%s/token_key", vcfcsConfig.Uaa.Address),
-		httpClient: &http.Client{
-			Timeout:   time.Second * time.Duration(vcfcsConfig.Uaa.Timeout),
-			Transport: customTransport,
-		},
+	customHttpClient := &http.Client{
+		Timeout:   time.Second * time.Duration(vcfcsConfig.Uaa.Timeout),
+		Transport: customTransport,
 	}
+
+	client := &UaaClient{
+		Username: vcfcsConfig.Uaa.Username,
+		Password: vcfcsConfig.Uaa.Password,
+		Endpoints: &UaaEndpoints{
+			CheckToken: fmt.Sprintf("%s/check_token", vcfcsConfig.Uaa.Address),
+			TokenKey:   fmt.Sprintf("%s/token_key", vcfcsConfig.Uaa.Address),
+		},
+		httpClient: customHttpClient,
+	}
+
+	// Update the key signing information for the UAA server once a day, this will cut down on traffic to the UAA server
+	ticker := time.NewTicker(UaaSigningKeyRefreshInterval)
+	go func() {
+		for _ = range ticker.C {
+			logger.Log.Debug("refreshing signing key info from UAA server")
+			err := client.updateSigningKeyData()
+			if err != nil {
+				logger.Log.Error("error getting signing key info from UAA server, perhaps it's down? continuing to use cached signing key data...")
+			}
+		}
+	}()
+
+	return client
 }
 
-// todo: refactor so this method is callled and caching signing key information, updating on a timer
-func (uaa *UaaClient) GetTokenSigningInfo() (TokenKeyResponse, error) {
+func (uaa *UaaClient) updateSigningKeyData() error {
 	var signingKeyResp TokenKeyResponse
 
-	resp, err := uaa.httpClient.Get(uaa.TokenKeyEndpoint)
+	resp, err := uaa.httpClient.Get(uaa.Endpoints.TokenKey)
 	if err != nil {
-		return signingKeyResp, err
+		return err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return signingKeyResp, fmt.Errorf("received a status code %v when requesting token signing info", resp.Status)
+		return fmt.Errorf("received a status code %v when requesting token signing info", resp.Status)
 	}
 	defer resp.Body.Close()
 
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return signingKeyResp, err
+		return err
 	}
 	err = json.Unmarshal(responseBody, &signingKeyResp)
 	if err != nil {
-		return signingKeyResp, err
+		return err
 	}
-	return signingKeyResp, nil
+
+	// cache response
+	uaa.SigningKeyData = signingKeyResp
+
+	return nil
 }
 
 func (uaa *UaaClient) AuthMiddleware() echo.MiddlewareFunc {
-	// todo: refactor to cache this signing info and update with a timer channel instead of crashing when UAA is down
-	uaaKeyData, err := uaa.GetTokenSigningInfo()
-	if err != nil {
-		// connection lost with UAA
-		logger.Log.Fatal(err)
+
+	if uaa.SigningKeyData.Value == "" || uaa.SigningKeyData.Alg == "" {
+		err := uaa.updateSigningKeyData()
+		if err != nil {
+			// connection lost with UAA
+			logger.Log.Fatal(err)
+		}
 	}
 
-	publicKey, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(uaaKeyData.Value))
+	publicKey, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(uaa.SigningKeyData.Value))
 
 	// The JWT middleware will handle basic authentication, our success handler does broad based audience claim authorization
 	return middleware.JWTWithConfig(middleware.JWTConfig{
 		SigningKey:    publicKey,
-		SigningMethod: uaaKeyData.Alg,
+		SigningMethod: uaa.SigningKeyData.Alg,
 		AuthScheme:    UaaAuthScheme,
 		// JWT middleware handles basic validity checks, this successhandler is our custom audience check since UAA
 		// returns a []string for the aud claim so single users can access multiple resources, the consequence is we can't
