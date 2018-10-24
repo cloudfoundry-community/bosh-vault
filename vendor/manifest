@@ -1366,6 +1366,15 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/sethvargo/go-password/password",
+			"repository": "https://github.com/sethvargo/go-password",
+			"vcs": "git",
+			"revision": "68ac5879751a7105834296859f8c1bf70b064675",
+			"branch": "master",
+			"path": "/password",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/sirupsen/logrus",
 			"repository": "https://github.com/sirupsen/logrus",
 			"vcs": "git",
