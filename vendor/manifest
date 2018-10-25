@@ -1123,6 +1123,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/hashicorp/vault",
+			"repository": "https://github.com/hashicorp/vault",
+			"vcs": "git",
+			"revision": "a92d999f0858a03ebac6918fd0e4042de14c9671",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/hpcloud/tail",
 			"repository": "https://github.com/hpcloud/tail",
 			"vcs": "git",
