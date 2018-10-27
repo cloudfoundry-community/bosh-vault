@@ -47,7 +47,7 @@ local-dev/certs/local-dev.crt:
 	./tasks/generate-local-dev-certs
 
 destroy: ## Burns down local dev environment
-	rm -r ./local-dev/certs/*
-	rm -r ./local-dev/vars/*
-	blite destroy
-	pkill vault-cfcs
+	-rm -r ./local-dev/certs/*
+	-rm -r ./local-dev/vars/*
+	-blite destroy
+	-pkill vault-cfcs

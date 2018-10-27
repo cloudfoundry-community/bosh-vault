@@ -12,6 +12,16 @@ if [ -z "$(${BLITE} status | grep running)" ]; then
   exit 1
 fi
 
+# Because this is in dev-mode we'll loose the entire Vault every time we close this script.
+# Todo: Maybe change this in future to be a real vault that persists to a file... or don't? meh.
+vault server -dev > /dev/null 2>&1 &
+# A sleep to make sure the Vault is unsealed and we can read the token from the filesystem
+sleep 2
+VAULT_TOKEN=$(cat ~/.vault-token)
+
 DIRECTOR_IP=$(${BLITE} networking | grep BLITE_DIRECTOR_IP | awk '{print $2}')
 
-VAULT_CFCS_UAA_ADDRESS=https://${DIRECTOR_IP}:8443 ./bin/vault-cfcs -config local-dev/config/local-dev.json
+VAULT_CFCS_VAULT_TOKEN=${VAULT_TOKEN} VAULT_CFCS_UAA_ADDRESS=https://${DIRECTOR_IP}:8443 ./bin/vault-cfcs -config local-dev/config/local-dev.json
+
+# Make sure backgrounded processes (dev vault) are killed
+trap 'kill $(jobs -p)' EXIT

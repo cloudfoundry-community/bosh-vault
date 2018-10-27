@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/labstack/echo"
 	vcfcsTypes "github.com/zipcar/vault-cfcs/types"
+	"github.com/zipcar/vault-cfcs/vault"
 	"io/ioutil"
 	"net/http"
 )
@@ -18,12 +19,12 @@ func dataGetByNameHandler(ctx echo.Context) error {
 		return errors.New("name query param not passed to data?name handler")
 	}
 	context.Log.Debugf("request to /v1/data?name=%s", name)
-
-	return ctx.JSONBlob(http.StatusOK, []byte(fmt.Sprintf(`{
-		"id":    "1337",
-		"name":  "%s",
-		"value": "credential123"
-		}`, name)))
+	secretResponse, err := vault.FetchSecretByName(name)
+	if err != nil {
+		context.Log.Errorf("problem fetching secret by name: %s %s", name, err)
+		return err
+	}
+	return ctx.JSON(http.StatusOK, secretResponse)
 }
 
 func dataGetByIdHandler(ctx echo.Context) error {
@@ -35,12 +36,12 @@ func dataGetByIdHandler(ctx echo.Context) error {
 		return errors.New("id uri param not passed to data/:id handler")
 	}
 	context.Log.Debugf("request to /v1/data/%s", id)
-
-	return ctx.JSONBlob(http.StatusOK, []byte(fmt.Sprintf(`{
-		"id":    "%s",
-		"name":  "credential",
-		"value": "credential123"
-		}`, id)))
+	secretResponse, err := vault.FetchSecretById(id)
+	if err != nil {
+		context.Log.Errorf("problem fetching secret by id: %s %s", id, err)
+		return err
+	}
+	return ctx.JSON(http.StatusOK, secretResponse)
 }
 
 func dataPostHandler(ctx echo.Context) error {

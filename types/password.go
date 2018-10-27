@@ -3,9 +3,16 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/sethvargo/go-password/password"
+	"github.com/zipcar/vault-cfcs/vault"
 )
 
 const PasswordType = "password"
+const PasswordDefaultLength = 40
+const PasswordDefaultSymbols = 0
+const PasswordDefaultNumbers = 10
+const PasswordDefaultNoUppercase = true
+const PasswordDefaultAllowRepeat = true
 
 type PasswordRequest struct {
 	Name string `json:"name"`
@@ -18,11 +25,23 @@ func (r *PasswordRequest) Validate() bool {
 
 func (r *PasswordRequest) Generate() (GenericCredentialResponse, error) {
 	var respObj PasswordPostResponse
-	json.Unmarshal([]byte(fmt.Sprintf(`{
-		"id":    "1337",
-		"name":  "%s",
-		"value": "The most secure password the_world has-ever-known!1!!"
-		}`, r.Name)), &respObj)
+	//todo: accept options and pass them through
+	passValue, err := password.Generate(PasswordDefaultLength, PasswordDefaultNumbers, PasswordDefaultSymbols, PasswordDefaultNoUppercase, PasswordDefaultAllowRepeat)
+	if err != nil {
+		return respObj, err
+	}
+
+	id, err := vault.StoreSecret(r.Name, passValue)
+	if err != nil {
+		return respObj, err
+	}
+
+	respObj = PasswordPostResponse{
+		Name:  r.Name,
+		Id:    id,
+		Value: passValue,
+	}
+
 	return respObj, nil
 }
 

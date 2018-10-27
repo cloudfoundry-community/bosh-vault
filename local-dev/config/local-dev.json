@@ -11,5 +11,8 @@
     "password": "testing-vault-cfcs",
     "ca": "./local-dev/certs/local-dev-director-ca.crt",
     "skipverify": false
+  },
+  "vault": {
+    "address": "http://127.0.0.1:8200"
   }
 }

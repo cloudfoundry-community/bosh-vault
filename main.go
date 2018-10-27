@@ -6,6 +6,7 @@ import (
 	"github.com/zipcar/vault-cfcs/config"
 	"github.com/zipcar/vault-cfcs/logger"
 	"github.com/zipcar/vault-cfcs/server"
+	"github.com/zipcar/vault-cfcs/vault"
 	"github.com/zipcar/vault-cfcs/version"
 	"os"
 )
@@ -31,5 +32,8 @@ func main() {
 	logger.InitializeLogger(vcfcsConfig)
 	logger.Log.Infof("Hello world. I am vault-cfcs version %s", version.Version)
 	logger.Log.Debugf("Config: %+v", vcfcsConfig)
+
+	vault.InitializeClient(vcfcsConfig)
+
 	server.ListenAndServe(vcfcsConfig)
 }
