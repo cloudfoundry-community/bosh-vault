@@ -36,6 +36,9 @@ bosh-lite: bin/blite local-certs local-vars ## Spin up a local bosh director wit
 test-deploy-redis: ## Tries to deploy redis with a generated password on the bosh-lite director
 	./tasks/test-deploy-redis
 
+test-deploy-nginx:
+	./tasks/test-deploy-nginx
+
 local-vars: local-dev/vars/local-dev-vars.yml
 
 local-dev/vars/local-dev-vars.yml:
