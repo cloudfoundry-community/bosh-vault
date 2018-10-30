@@ -10,12 +10,10 @@ import (
 	"time"
 )
 
-const VaultDataKey = "value" // the name of the key where we're storing secret data
-
 type SecretResponse struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
-	Id    string `json:"id"`
+	Name  string      `json:"name"`
+	Value interface{} `json:"value"`
+	Id    string      `json:"id"`
 }
 
 var Client *api.Client
@@ -61,18 +59,16 @@ func FetchSecretById(id string) (SecretResponse, error) {
 
 	response = SecretResponse{
 		Id:    id,
-		Value: secret.Data["data"].(map[string]interface{})["value"].(string),
+		Value: secret.Data["data"],
 		Name:  decodedId.Name,
 	}
 
 	return response, nil
 }
 
-func StoreSecret(name string, value string) (string, error) {
+func StoreSecret(name string, value interface{}) (string, error) {
 	secretValue := map[string]interface{}{
-		"data": map[string]interface{}{
-			VaultDataKey: value,
-		},
+		"data":    value,
 		"options": map[string]interface{}{},
 	}
 	path := getFullPath(name)

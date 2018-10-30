@@ -36,12 +36,15 @@ func dataGetByIdHandler(ctx echo.Context) error {
 		return errors.New("id uri param not passed to data/:id handler")
 	}
 	context.Log.Debugf("request to /v1/data/%s", id)
-	secretResponse, err := vault.FetchSecretById(id)
+	vaultSecretResponse, err := vault.FetchSecretById(id)
 	if err != nil {
 		context.Log.Errorf("problem fetching secret by id: %s %s", id, err)
 		return err
 	}
-	return ctx.JSON(http.StatusOK, secretResponse)
+
+	secretResp := vcfcsTypes.ParseSecretResponse(vaultSecretResponse)
+
+	return ctx.JSON(http.StatusOK, secretResp)
 }
 
 func dataPostHandler(ctx echo.Context) error {

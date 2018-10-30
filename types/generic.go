@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/zipcar/vault-cfcs/vault"
 )
 
 type GenericCredentialPostRequest struct {
@@ -12,9 +13,7 @@ type GenericCredentialPostRequest struct {
 	Parameters json.RawMessage `json:"parameters, omitempty"`
 }
 
-type GenericCredentialResponse interface {
-	JsonString() string
-}
+type GenericCredentialResponse interface{}
 
 type GenericCredentialRequest interface {
 	Generate() (GenericCredentialResponse, error)
@@ -48,4 +47,20 @@ func ParseGenericCredentialRequest(requestBody []byte) (GenericCredentialRequest
 	default:
 		return nil, errors.New(fmt.Sprintf("credential request type: %s not supported! Must be one of: %s, %s, %s, %s", g.Type, CertificateType, PasswordType, SshKeypairType, RsaKeypairType))
 	}
+}
+
+func ParseSecretResponse(vaultSecretResponse vault.SecretResponse) *vault.SecretResponse {
+	var secretResp interface{}
+
+	secretType := vaultSecretResponse.Value.(map[string]interface{})["type"].(string)
+	switch secretType {
+	case PasswordType:
+		secretResp = PasswordUnmarshalVaultData(&vaultSecretResponse)
+	case RsaKeypairType:
+		secretResp = RsaUnmarshalVaultData(&vaultSecretResponse)
+	case SshKeypairType:
+		secretResp = SshUnmarshalVaultData(&vaultSecretResponse)
+	}
+
+	return secretResp.(*vault.SecretResponse)
 }

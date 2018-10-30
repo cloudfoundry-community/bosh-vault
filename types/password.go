@@ -1,8 +1,6 @@
 package types
 
 import (
-	"encoding/json"
-	"fmt"
 	"github.com/sethvargo/go-password/password"
 	"github.com/zipcar/vault-cfcs/vault"
 )
@@ -19,6 +17,18 @@ type PasswordRequest struct {
 	Type string `json:"type"`
 }
 
+func PasswordMarshalVaultData(password string) map[string]interface{} {
+	return map[string]interface{}{
+		"value": password,
+		"type":  PasswordType,
+	}
+}
+
+func PasswordUnmarshalVaultData(vaultData *vault.SecretResponse) *vault.SecretResponse {
+	vaultData.Value = vaultData.Value.(map[string]interface{})["value"].(string)
+	return vaultData
+}
+
 func (r *PasswordRequest) Validate() bool {
 	return r.Type == PasswordType
 }
@@ -31,7 +41,8 @@ func (r *PasswordRequest) Generate() (GenericCredentialResponse, error) {
 		return respObj, err
 	}
 
-	id, err := vault.StoreSecret(r.Name, passValue)
+	id, err := vault.StoreSecret(r.Name, PasswordMarshalVaultData(passValue))
+
 	if err != nil {
 		return respObj, err
 	}
@@ -53,12 +64,4 @@ type PasswordPostResponse struct {
 	Id    string `json:"id"`
 	Name  string `json:"name"`
 	Value string `json:"value"`
-}
-
-func (res PasswordPostResponse) JsonString() string {
-	structBytes, err := json.Marshal(res)
-	if err != nil {
-		return "{}"
-	}
-	return fmt.Sprintf("%s", structBytes)
 }

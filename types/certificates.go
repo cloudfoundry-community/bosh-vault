@@ -126,11 +126,3 @@ type CertificatePostResponse struct {
 		PrivateKey  string `json:"private_key"`
 	} `json:"value"`
 }
-
-func (res CertificatePostResponse) JsonString() string {
-	structBytes, err := json.Marshal(res)
-	if err != nil {
-		return "{}"
-	}
-	return fmt.Sprintf("%s", structBytes)
-}
