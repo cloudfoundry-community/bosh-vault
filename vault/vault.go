@@ -35,7 +35,7 @@ func FetchSecretByName(name string) (SecretResponse, error) {
 	secretRequest := VersionedSecretMetaData{
 		Name:    name,
 		Path:    fullPath,
-		Version: json.Number(0), // version 0 will fetch latest which is the expected behavior when fetching by name
+		Version: json.Number("0"), // version 0 will fetch latest which is the expected behavior when fetching by name
 	}
 	id, _ := EncodeId(secretRequest)
 	return FetchSecretById(id)
