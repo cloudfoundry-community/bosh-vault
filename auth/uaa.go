@@ -165,8 +165,6 @@ func (uaa *UaaClient) validateUaaAudience(ctx echo.Context) {
 		errorText := fmt.Sprintf("valid JWT received but missing %s audience claim, closing connection", UaaExpectedAudience)
 		logger.Log.Error(errorText)
 		ctx.Error(echo.NewHTTPError(http.StatusUnauthorized, errorText))
-	} else {
-		logger.Log.Debugf("token claim audience contains %s audience claim, allow connection", UaaExpectedAudience)
 	}
 }
 
