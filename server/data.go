@@ -18,7 +18,7 @@ func dataGetByNameHandler(ctx echo.Context) error {
 		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, "name query param not passed to data?name handler"))
 		return errors.New("name query param not passed to data?name handler")
 	}
-	context.Log.Debugf("request to /v1/data?name=%s", name)
+	context.Log.Debugf("request to GET /v1/data?name=%s", name)
 	secretResponse, err := vault.FetchSecretByName(name)
 	if err != nil {
 		context.Log.Errorf("problem fetching secret by name: %s %s", name, err)
@@ -81,4 +81,21 @@ func dataPostHandler(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusCreated, &credential)
+}
+
+func dataDeleteHandler(ctx echo.Context) error {
+	context := ctx.(*VcfcsContext)
+	name := ctx.QueryParam("name")
+	if name == "" {
+		// this should never happen because of echo's router
+		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, "name query param not passed to data?name handler"))
+		return errors.New("name query param not passed to data?name handler")
+	}
+	context.Log.Debugf("request to DELETE /v1/data?name=%s", name)
+	err := vault.DeleteSecretByName(name)
+	if err != nil {
+		context.Log.Errorf("problem deleting secret by name: %s %s", name, err)
+		return err
+	}
+	return ctx.NoContent(http.StatusNoContent)
 }

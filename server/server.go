@@ -53,6 +53,7 @@ func ListenAndServe(vcfcsConfig config.Configuration) {
 	e.POST("/v1/data", dataPostHandler)
 	e.GET("/v1/data/:id", dataGetByIdHandler)
 	e.GET("/v1/data", dataGetByNameHandler)
+	e.DELETE("v1/data", dataDeleteHandler)
 
 	if vcfcsConfig.Tls.Cert == "" || vcfcsConfig.Tls.Key == "" {
 		logger.Log.Fatal("unable to start vault-cfcs without tls_cert_path and tls_key_path being set")

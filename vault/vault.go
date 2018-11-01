@@ -66,6 +66,14 @@ func FetchSecretById(id string) (SecretResponse, error) {
 	return response, nil
 }
 
+func DeleteSecretByName(name string) error {
+	_, err := Client.Logical().Delete(getFullPath(name))
+	if err != nil {
+		logger.Log.Error(err)
+	}
+	return nil
+}
+
 func StoreSecret(name string, value interface{}) (string, error) {
 	secretValue := map[string]interface{}{
 		"data":    value,
