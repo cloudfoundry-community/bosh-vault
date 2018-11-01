@@ -80,5 +80,5 @@ func dataPostHandler(ctx echo.Context) error {
 		ctx.Error(echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("problem generating %s: %s", credentialType, err)))
 	}
 
-	return ctx.JSON(http.StatusOK, &credential)
+	return ctx.JSON(http.StatusCreated, &credential)
 }
