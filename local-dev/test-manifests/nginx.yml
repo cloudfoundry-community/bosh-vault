@@ -62,6 +62,22 @@ instance_groups:
             My hostname/IP: <b><!--# echo var="HTTP_HOST" --></b><br />
             Your IP: <b><!--# echo var="REMOTE_ADDR" --></b><br />
             Pass: ((some_password))<br />
+            CA Root: <br /><br/>
+            Ca: ((testing_ca.ca))<br /><br />
+            Cert: ((testing_ca.certificate))<br /><br />
+            Private Key: ((testing_ca.private_key))<br /><br />
+            CA Intermediate: <br /><br/>
+            Ca: ((testing_intermediate_ca.ca))<br /><br />
+            Cert: ((testing_intermediate_ca.certificate))<br /><br />
+            Private Key: ((testing_intermediate_ca.private_key))<br /><br />
+            TLS Server Certs:<br /><br />
+            Ca: ((testing_server_ssl.ca))<br /><br />
+            Cert: ((testing_server_ssl.certificate))<br /><br />
+            Private Key: ((testing_server_ssl.private_key))<br /><br />
+            MTLS USer Cert:<br /><br />
+            Ca: ((testing_user_root.ca))<br /><br />
+            Cert: ((testing_user_root.certificate))<br /><br />
+            Private Key: ((testing_user_root.private_key))<br /><br />
             RSA:<br /><br />
             Pub: ((some_rsa_key.public_key))<br /><br />
             Priv: ((some_rsa_key.private_key))<br /><br />
@@ -84,6 +100,40 @@ variables:
 - name: some_ssh_key
   type: ssh
 
+- name: testing_ca
+  type: certificate
+  options:
+    is_ca: true
+    common_name: testing
+
+
+- name: testing_intermediate_ca
+  type: certificate
+  options:
+    is_ca: true
+    ca: testing_ca
+    common_name: intertesting
+
+
+- name: testing_server_ssl
+  type: certificate
+  options:
+    ca: testing_intermediate_ca
+    common_name: node
+    alternative_names: ["*.testing.default.testing.bosh"]
+    extended_key_usage:
+    - server_auth
+    - client_auth
+
+- name: testing_user_root
+  type: certificate
+  options:
+    ca: testing_intermediate_ca
+    common_name: root
+    extended_key_usage:
+    - client_auth
+
+    
 update:
   canaries: 1
   max_in_flight: 1
