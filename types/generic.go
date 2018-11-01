@@ -60,6 +60,8 @@ func ParseSecretResponse(vaultSecretResponse vault.SecretResponse) *vault.Secret
 		secretResp = RsaUnmarshalVaultData(&vaultSecretResponse)
 	case SshKeypairType:
 		secretResp = SshUnmarshalVaultData(&vaultSecretResponse)
+	case CertificateType:
+		secretResp = CertificateUnmarshalVaultData(&vaultSecretResponse)
 	}
 
 	return secretResp.(*vault.SecretResponse)
