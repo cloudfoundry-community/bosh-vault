@@ -38,7 +38,7 @@ director are in the `local-dev` directory.
 ### Option 1: All-In-One Test Deploys
  1. Run `make bosh-lite` to setup a local bosh-lite director running UAA and configured to communicate with a local vault-cfcs binary
  1. Run `make run` to start the config server
- 1. Run `make test-deploy-redis` to deploy redis using a generated password
+ 1. Run `make test-deploy-nginx` to deploy NGINX that will serve a single page that is filled with plain text credentials to show they can all be generated. 
  
 ### Option 2: Just The Director
  1. Run `make bosh-lite` to setup a local bosh-lite director running UAA and configured to communicate with a local vault-cfcs binary
