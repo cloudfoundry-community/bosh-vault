@@ -301,7 +301,7 @@ func (r *CertificateRequest) GenerateIntermediateCertificate() (GenericCredentia
 	}
 
 	certTemplate.KeyUsage = x509.KeyUsageCertSign | x509.KeyUsageCRLSign
-	certTemplate.AuthorityKeyId = certTemplate.SubjectKeyId
+	certTemplate.AuthorityKeyId = rootCaCert.SubjectKeyId
 
 	rawCert, err := x509.CreateCertificate(rand.Reader, &certTemplate, rootCaCert, &privateKey.PublicKey, rootCaKey)
 	if err != nil {
