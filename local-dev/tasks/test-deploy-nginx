@@ -4,7 +4,7 @@ SCRIPT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source ${SCRIPT_PATH}/.shared
 
-BLITE=${SCRIPT_PATH}/../bin/blite
+BLITE=${SCRIPT_PATH}/../../bin/blite
 
 eval $(${BLITE} env-eval)
 
@@ -13,4 +13,4 @@ if [ -z "$(${BLITE} status | grep running)" ]; then
   exit 1
 fi
 
-bosh -d redis deploy ${SCRIPT_PATH}/../local-dev/test-manifests/redis.yml
+bosh -d nginx deploy ${MANIFESTS_PATH}/nginx.yml

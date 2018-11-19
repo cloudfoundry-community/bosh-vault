@@ -4,7 +4,7 @@ SCRIPT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source ${SCRIPT_PATH}/.shared
 
-BLITE=${SCRIPT_PATH}/../bin/blite
+BLITE=${SCRIPT_PATH}/../../bin/blite
 
 if [ -z "$(${BLITE} status | grep running)" ]; then
   echo "There doesn't seem to be a blite director running. Run make bosh-lite before running this command."

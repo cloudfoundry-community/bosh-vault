@@ -14,7 +14,7 @@ build: fmt ## Builds the binary
 
 .PHONY: run
 run: build ## Builds and runs the binary using local-dev settings (requires running bosh-lite setup)
-	./tasks/run-local-binary
+	./local-dev/tasks/run-local-binary
 
 .PHONY: fmt
 fmt: ## Runs gofmt on the entire project
@@ -31,23 +31,23 @@ bin/blite:
 
 .PHONY: bosh-lite
 bosh-lite: bin/blite local-certs local-vars ## Spin up a local bosh director with UAA that is ready to communicate with the local binary
-	./tasks/bootstrap-local-director
+	./local-dev/tasks/bootstrap-local-director
 
 test-deploy-redis: ## Tries to deploy redis with a generated password on the bosh-lite director
-	./tasks/test-deploy-redis
+	./local-dev/tasks/test-deploy-redis
 
-test-deploy-nginx:
-	./tasks/test-deploy-nginx
+test-deploy-nginx: ## Tries to deploy NGINX and host a page filled with all the types of secrets that can be generated
+	./local-dev/tasks/test-deploy-nginx
 
 local-vars: local-dev/vars/local-dev-vars.yml
 
 local-dev/vars/local-dev-vars.yml:
-	./tasks/generate-local-dev-vars-file
+	./local-dev/tasks/generate-local-dev-vars-file
 
 local-certs: local-dev/certs/local-dev.crt
 
 local-dev/certs/local-dev.crt:
-	./tasks/generate-local-dev-certs
+	./local-dev/tasks/generate-local-dev-certs
 
 destroy: ## Burns down local dev environment
 	-rm -r ./local-dev/certs/*

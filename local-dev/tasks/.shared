@@ -2,16 +2,16 @@
 
 SCRIPT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-CERTS_PATH=${SCRIPT_PATH}/../local-dev/certs
+CERTS_PATH=${SCRIPT_PATH}/../certs
 mkdir -p ${CERTS_PATH}
 DIRECTOR_CA_CERT_PATH=${CERTS_PATH}/local-dev-director-ca.crt
 
-LOCAL_DEV_VARS_DIR="${SCRIPT_PATH}/../local-dev/vars"
+LOCAL_DEV_VARS_DIR="${SCRIPT_PATH}/../vars"
 mkdir -p ${LOCAL_DEV_VARS_DIR}
 VARS_NAME="local-dev-vars.yml"
 LOCAL_DEV_VARS_PATH=${LOCAL_DEV_VARS_DIR}/${VARS_NAME}
 
-MANIFESTS_PATH=${SCRIPT_PATH}/../manifests
+MANIFESTS_PATH=${SCRIPT_PATH}/../test-manifests
 x509_NAME="local-dev"
 
 # Check that the 'ip' command exists (it doesn't exist on macs by default)
