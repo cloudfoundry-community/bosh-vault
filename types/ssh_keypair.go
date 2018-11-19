@@ -23,7 +23,7 @@ func SshMarshalVaultData(value SshKeypairValue) map[string]interface{} {
 		"public_key":             value.PublicKey,
 		"private_key":            value.PrivateKey,
 		"public_key_fingerprint": value.PublicKeyFingerprint,
-		"type":                   SshKeypairType,
+		"type": SshKeypairType,
 	}
 }
 
