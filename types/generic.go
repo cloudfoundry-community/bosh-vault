@@ -21,7 +21,7 @@ type GenericCredentialRequest interface {
 	CredentialType() string
 }
 
-func ParseGenericCredentialRequest(requestBody []byte) (GenericCredentialRequest, error) {
+func ParseGenericCredentialPostRequest(requestBody []byte) (GenericCredentialRequest, error) {
 	var g GenericCredentialPostRequest
 	err := json.Unmarshal([]byte(requestBody), &g)
 	if err != nil {

@@ -57,7 +57,7 @@ func dataPostHandler(ctx echo.Context) error {
 
 	context.Log.Debugf("request: %s", requestBody)
 
-	credentialRequest, err := vcfcsTypes.ParseGenericCredentialRequest(requestBody)
+	credentialRequest, err := vcfcsTypes.ParseGenericCredentialPostRequest(requestBody)
 	if err != nil {
 		context.Log.Error("request error: ", err)
 		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, err.Error()))
