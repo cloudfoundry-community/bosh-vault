@@ -180,9 +180,7 @@ func getRootCaAndKeyByName(caName string) (*x509.Certificate, *rsa.PrivateKey, e
 	return rootCaCert, rootCaKey, nil
 }
 
-func storeAndReturnCert(name string, rawCaCert, rawCert, rawKey []byte) (CertificateResponse, error) {
-	resp := CertificateResponse{}
-
+func assembleCertRecord(rawCaCert, rawCert, rawKey []byte) (CertificateRecord) {
 	pemCa := pem.EncodeToMemory(&pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: rawCaCert,
@@ -198,11 +196,15 @@ func storeAndReturnCert(name string, rawCaCert, rawCert, rawKey []byte) (Certifi
 		Bytes: rawKey,
 	})
 
-	certValue := CertificateRecord{
+	return CertificateRecord{
 		Certificate: string(pemCert),
 		Ca:          string(pemCa),
 		PrivateKey:  string(pemPrivateKey),
 	}
+}
+
+func storeCertRecord(name string, certValue CertificateRecord) (CertificateResponse, error) {
+	resp := CertificateResponse{}
 
 	id, err := vault.StoreSecret(name, CertificateMarshalVaultData(certValue))
 	if err != nil {
@@ -264,7 +266,7 @@ func (r *CertificateRequest) GenerateRegularCertificate() (GenericCredentialResp
 		return resp, errors.New(fmt.Sprintf("problem generating the x509 CA cert: %s", err))
 	}
 
-	return storeAndReturnCert(r.Name, rootCaCert.Raw, rawCert, x509.MarshalPKCS1PrivateKey(privateKey))
+	return storeCertRecord(r.Name, assembleCertRecord(rootCaCert.Raw, rawCert, x509.MarshalPKCS1PrivateKey(privateKey)))
 }
 
 func (r *CertificateRequest) GenerateRootCertificate() (GenericCredentialResponse, error) {
@@ -284,7 +286,7 @@ func (r *CertificateRequest) GenerateRootCertificate() (GenericCredentialRespons
 		return resp, errors.New(fmt.Sprintf("problem generating the x509 CA cert: %s", err))
 	}
 
-	return storeAndReturnCert(r.Name, rawCert, rawCert, x509.MarshalPKCS1PrivateKey(privateKey))
+	return storeCertRecord(r.Name, assembleCertRecord(rawCert, rawCert, x509.MarshalPKCS1PrivateKey(privateKey)))
 }
 
 func (r *CertificateRequest) GenerateIntermediateCertificate() (GenericCredentialResponse, error) {
@@ -308,5 +310,5 @@ func (r *CertificateRequest) GenerateIntermediateCertificate() (GenericCredentia
 		return resp, errors.New(fmt.Sprintf("problem generating the x509 CA cert: %s", err))
 	}
 
-	return storeAndReturnCert(r.Name, rootCaCert.Raw, rawCert, x509.MarshalPKCS1PrivateKey(privateKey))
+	return storeCertRecord(r.Name, assembleCertRecord(rootCaCert.Raw, rawCert, x509.MarshalPKCS1PrivateKey(privateKey)))
 }
