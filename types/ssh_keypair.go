@@ -18,17 +18,33 @@ type SshKeypairRequest struct {
 	Type string `json:"type"`
 }
 
-func SshMarshalVaultData(value SshKeypairValue) map[string]interface{} {
+func (record SshKeypairRecord) ToVaultDataInterface() map[string]interface{} {
 	return map[string]interface{}{
-		"public_key":             value.PublicKey,
-		"private_key":            value.PrivateKey,
-		"public_key_fingerprint": value.PublicKeyFingerprint,
+		"public_key":             record.PublicKey,
+		"private_key":            record.PrivateKey,
+		"public_key_fingerprint": record.PublicKeyFingerprint,
 		"type": SshKeypairType,
 	}
 }
 
-func SshUnmarshalVaultData(rawVaultData *vault.SecretResponse) *vault.SecretResponse {
-	var keypairResponse SshKeypairValue
+func (record SshKeypairRecord) Store(name string) (GenericCredentialResponse, error) {
+	var resp SshKeypairResponse
+	secretId, err := vault.StoreSecret(name, record.ToVaultDataInterface())
+	if err != nil {
+		return resp, err
+	}
+
+	resp = SshKeypairResponse{
+		Name:  name,
+		Id:    secretId,
+		Value: record,
+	}
+
+	return resp, nil
+}
+
+func ParseVaultDataAsSshKeypair(rawVaultData *vault.SecretResponse) *vault.SecretResponse {
+	var keypairResponse SshKeypairRecord
 	err := mapstructure.Decode(rawVaultData.Value, &keypairResponse)
 	if err != nil {
 		logger.Log.Error(err)
@@ -61,34 +77,27 @@ func (r *SshKeypairRequest) Generate() (GenericCredentialResponse, error) {
 
 	pubKeyBytes := ssh.MarshalAuthorizedKey(pubKey)
 
-	sshKeyPair := SshKeypairValue{
+	sshKeyPair := SshKeypairRecord{
 		PrivateKey:           string(pemPriv),
 		PublicKey:            string(pubKeyBytes),
 		PublicKeyFingerprint: ssh.FingerprintLegacyMD5(pubKey),
 	}
 
-	secretId, err := vault.StoreSecret(r.Name, SshMarshalVaultData(sshKeyPair))
-	resp = SshKeypairResponse{
-		Name:  r.Name,
-		Id:    secretId,
-		Value: sshKeyPair,
-	}
-
-	return resp, nil
+	return sshKeyPair.Store(r.Name)
 }
 
 func (r *SshKeypairRequest) CredentialType() string {
 	return r.Type
 }
 
-type SshKeypairValue struct {
+type SshKeypairRecord struct {
 	PublicKey            string `json:"public_key" mapstructure:"public_key"`
 	PrivateKey           string `json:"private_key" mapstructure:"private_key"`
 	PublicKeyFingerprint string `json:"public_key_fingerprint" mapstructure:"public_key_fingerprint"`
 }
 
 type SshKeypairResponse struct {
-	Name  string          `json:"name"`
-	Id    string          `json:"id"`
-	Value SshKeypairValue `json:"value"`
+	Name  string           `json:"name"`
+	Id    string           `json:"id"`
+	Value SshKeypairRecord `json:"value"`
 }

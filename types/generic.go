@@ -13,7 +13,17 @@ type GenericCredentialPostRequest struct {
 	Parameters json.RawMessage `json:"parameters, omitempty"`
 }
 
+type GenericCredentialPutRequest struct {
+	Name  string          `json:"name"`
+	Type  string          `json:"type"`
+	Value json.RawMessage `json:"value, omitempty"`
+}
+
 type GenericCredentialResponse interface{}
+
+type GenericCredentialRecord interface {
+	Store(name string) (GenericCredentialResponse, error)
+}
 
 type GenericCredentialRequest interface {
 	Generate() (GenericCredentialResponse, error)
@@ -55,13 +65,13 @@ func ParseSecretResponse(vaultSecretResponse vault.SecretResponse) *vault.Secret
 	secretType := vaultSecretResponse.Value.(map[string]interface{})["type"].(string)
 	switch secretType {
 	case PasswordType:
-		secretResp = PasswordUnmarshalVaultData(&vaultSecretResponse)
+		secretResp = ParseVaultDataAsPassword(&vaultSecretResponse)
 	case RsaKeypairType:
-		secretResp = RsaUnmarshalVaultData(&vaultSecretResponse)
+		secretResp = ParseVaultDataAsRsaKeypair(&vaultSecretResponse)
 	case SshKeypairType:
-		secretResp = SshUnmarshalVaultData(&vaultSecretResponse)
+		secretResp = ParseVaultDataAsSshKeypair(&vaultSecretResponse)
 	case CertificateType:
-		secretResp = CertificateUnmarshalVaultData(&vaultSecretResponse)
+		secretResp = ParseVaultDataAsCertificateRecord(&vaultSecretResponse)
 	}
 
 	return secretResp.(*vault.SecretResponse)

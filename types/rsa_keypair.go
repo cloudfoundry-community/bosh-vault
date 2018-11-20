@@ -19,16 +19,29 @@ type RsaKeypairRequest struct {
 	Type string `json:"type"`
 }
 
-func RsaMarshalVaultData(value RsaKeypairValue) map[string]interface{} {
-	return map[string]interface{}{
-		"public_key":  value.PublicKey,
-		"private_key": value.PrivateKey,
+func (record RsaKeypairRecord) Store(name string) (GenericCredentialResponse, error) {
+	var resp RsaKeypairResponse
+	secretId, err := vault.StoreSecret(name, map[string]interface{}{
+		"public_key":  record.PublicKey,
+		"private_key": record.PrivateKey,
 		"type":        RsaKeypairType,
+	})
+
+	if err != nil {
+		return resp, err
 	}
+
+	resp = RsaKeypairResponse{
+		Name:  name,
+		Id:    secretId,
+		Value: record,
+	}
+
+	return resp, nil
 }
 
-func RsaUnmarshalVaultData(rawVaultData *vault.SecretResponse) *vault.SecretResponse {
-	var keypairResponse RsaKeypairValue
+func ParseVaultDataAsRsaKeypair(rawVaultData *vault.SecretResponse) *vault.SecretResponse {
+	var keypairResponse RsaKeypairRecord
 	err := mapstructure.Decode(rawVaultData.Value, &keypairResponse)
 	if err != nil {
 		logger.Log.Error(err)
@@ -63,36 +76,25 @@ func (r *RsaKeypairRequest) Generate() (GenericCredentialResponse, error) {
 		Bytes: pubKeyBytes,
 	})
 
-	rsaKeyPair := RsaKeypairValue{
+	rsaKeyPair := RsaKeypairRecord{
 		PublicKey:  string(pemPublic),
 		PrivateKey: string(pemPriv),
 	}
 
-	secretId, err := vault.StoreSecret(r.Name, RsaMarshalVaultData(rsaKeyPair))
-	if err != nil {
-		return resp, err
-	}
-
-	resp = RsaKeypairResponse{
-		Name:  r.Name,
-		Id:    secretId,
-		Value: rsaKeyPair,
-	}
-
-	return resp, nil
+	return rsaKeyPair.Store(r.Name)
 }
 
 func (r *RsaKeypairRequest) CredentialType() string {
 	return r.Type
 }
 
-type RsaKeypairValue struct {
+type RsaKeypairRecord struct {
 	PublicKey  string `json:"public_key" mapstructure:"public_key"`
 	PrivateKey string `json:"private_key" mapstructure:"private_key"`
 }
 
 type RsaKeypairResponse struct {
-	Name  string          `json:"name"`
-	Id    string          `json:"id"`
-	Value RsaKeypairValue `json:"value"`
+	Name  string           `json:"name"`
+	Id    string           `json:"id"`
+	Value RsaKeypairRecord `json:"value"`
 }
