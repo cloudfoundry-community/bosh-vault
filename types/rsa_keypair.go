@@ -19,7 +19,7 @@ type RsaKeypairRequest struct {
 	Type string `json:"type"`
 }
 
-func (record RsaKeypairRecord) Store(name string) (GenericCredentialResponse, error) {
+func (record RsaKeypairRecord) Store(name string) (CredentialResponse, error) {
 	var resp RsaKeypairResponse
 	secretId, err := vault.StoreSecret(name, map[string]interface{}{
 		"public_key":  record.PublicKey,
@@ -54,7 +54,7 @@ func (r *RsaKeypairRequest) Validate() bool {
 	return r.Type == RsaKeypairType
 }
 
-func (r *RsaKeypairRequest) Generate() (GenericCredentialResponse, error) {
+func (r *RsaKeypairRequest) Generate() (CredentialResponse, error) {
 	var resp RsaKeypairResponse
 
 	privKey, err := rsa.GenerateKey(rand.Reader, RsaKeySizeBits)

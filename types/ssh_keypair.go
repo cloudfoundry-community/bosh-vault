@@ -27,7 +27,7 @@ func (record SshKeypairRecord) ToVaultDataInterface() map[string]interface{} {
 	}
 }
 
-func (record SshKeypairRecord) Store(name string) (GenericCredentialResponse, error) {
+func (record SshKeypairRecord) Store(name string) (CredentialResponse, error) {
 	var resp SshKeypairResponse
 	secretId, err := vault.StoreSecret(name, record.ToVaultDataInterface())
 	if err != nil {
@@ -57,7 +57,7 @@ func (r *SshKeypairRequest) Validate() bool {
 	return r.Type == SshKeypairType
 }
 
-func (r *SshKeypairRequest) Generate() (GenericCredentialResponse, error) {
+func (r *SshKeypairRequest) Generate() (CredentialResponse, error) {
 	var resp SshKeypairResponse
 
 	privKey, err := rsa.GenerateKey(rand.Reader, RsaKeySizeBits)

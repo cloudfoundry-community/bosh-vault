@@ -78,7 +78,7 @@ func (r CertificateRequest) IsRegularCertificateRequest() bool {
 		r.Parameters.CommonName != ""
 }
 
-func (record CertificateRecord) Store(name string) (GenericCredentialResponse, error) {
+func (record CertificateRecord) Store(name string) (CredentialResponse, error) {
 	resp := CertificateResponse{}
 	id, err := vault.StoreSecret(name, map[string]interface{}{
 		"certificate": record.Certificate,
@@ -109,7 +109,7 @@ func ParseVaultDataAsCertificateRecord(rawVaultData *vault.SecretResponse) *vaul
 	return rawVaultData
 }
 
-func (r *CertificateRequest) Generate() (GenericCredentialResponse, error) {
+func (r *CertificateRequest) Generate() (CredentialResponse, error) {
 	switch {
 	case r.IsRegularCertificateRequest():
 		return r.GenerateRegularCertificate()
@@ -215,7 +215,7 @@ func assembleCertRecord(rawCaCert, rawCert, rawKey []byte) CertificateRecord {
 	}
 }
 
-func (r *CertificateRequest) GenerateRegularCertificate() (GenericCredentialResponse, error) {
+func (r *CertificateRequest) GenerateRegularCertificate() (CredentialResponse, error) {
 	var resp CertificateResponse
 
 	certTemplate, privateKey, err := newX509CertAndKey(r)
@@ -264,7 +264,7 @@ func (r *CertificateRequest) GenerateRegularCertificate() (GenericCredentialResp
 	return assembleCertRecord(rootCaCert.Raw, rawCert, x509.MarshalPKCS1PrivateKey(privateKey)).Store(r.Name)
 }
 
-func (r *CertificateRequest) GenerateRootCertificate() (GenericCredentialResponse, error) {
+func (r *CertificateRequest) GenerateRootCertificate() (CredentialResponse, error) {
 	var resp CertificateResponse
 
 	certTemplate, privateKey, err := newX509CertAndKey(r)
@@ -284,7 +284,7 @@ func (r *CertificateRequest) GenerateRootCertificate() (GenericCredentialRespons
 	return assembleCertRecord(rawCert, rawCert, x509.MarshalPKCS1PrivateKey(privateKey)).Store(r.Name)
 }
 
-func (r *CertificateRequest) GenerateIntermediateCertificate() (GenericCredentialResponse, error) {
+func (r *CertificateRequest) GenerateIntermediateCertificate() (CredentialResponse, error) {
 	var resp CertificateResponse
 
 	certTemplate, privateKey, err := newX509CertAndKey(r)

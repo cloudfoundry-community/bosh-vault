@@ -28,6 +28,7 @@ type Configuration struct {
 		Key  string `json:"key" yaml:"key"`
 	} `json:"tls" yaml:"tls"`
 	Uaa struct {
+		Enabled               bool   `json:"enabled" yaml:"enabled"`
 		Address               string `json:"address" yaml:"address"`
 		Username              string `json:"username" yaml:"username"`
 		Password              string `json:"password" yaml:"password"`
@@ -43,6 +44,7 @@ func GetConfig(configFilePath *string) Configuration {
 	vcfcsConfig.ApiListenAddress = DefaultApiListenAddress
 	vcfcsConfig.LogLevel = DefaultLogLevel
 	vcfcsConfig.ShutdownTimeoutSeconds = DefaultShutdownTimeoutSeconds
+	vcfcsConfig.Uaa.Enabled = true
 	vcfcsConfig.Uaa.Timeout = DefaultUaaConnectionTimeoutSeconds
 	vcfcsConfig.Vault.Timeout = DefaultVaultConnectionTimeoutSeconds
 	vcfcsConfig.Vault.Prefix = DefaultVaultPrefix

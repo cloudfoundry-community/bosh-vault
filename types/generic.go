@@ -7,56 +7,93 @@ import (
 	"github.com/zipcar/vault-cfcs/vault"
 )
 
-type GenericCredentialPostRequest struct {
+type GenericCredentialGenerationRequest struct {
 	Name       string          `json:"name"`
 	Type       string          `json:"type"`
 	Parameters json.RawMessage `json:"parameters, omitempty"`
 }
 
-type GenericCredentialPutRequest struct {
+type GenericCredentialSetRequest struct {
 	Name  string          `json:"name"`
 	Type  string          `json:"type"`
 	Value json.RawMessage `json:"value, omitempty"`
 }
 
-type GenericCredentialResponse interface{}
-
-type GenericCredentialRecord interface {
-	Store(name string) (GenericCredentialResponse, error)
+type CredentialSetRequest struct {
+	Name   string
+	Type   string
+	Record CredentialRecordInterface
 }
 
-type GenericCredentialRequest interface {
-	Generate() (GenericCredentialResponse, error)
+type CredentialResponse interface{}
+
+type CredentialRecordInterface interface {
+	Store(name string) (CredentialResponse, error)
+}
+
+type CredentialGenerationRequest interface {
+	Generate() (CredentialResponse, error)
 	Validate() bool
 	CredentialType() string
 }
 
-func ParseGenericCredentialPostRequest(requestBody []byte) (GenericCredentialRequest, error) {
-	var g GenericCredentialPostRequest
+func ParseCredentialSetRequest(requestBody []byte) (CredentialSetRequest, error) {
+	var g GenericCredentialSetRequest
+
+	err := json.Unmarshal(requestBody, &g)
+	if err != nil {
+		return CredentialSetRequest{}, errors.New(fmt.Sprintf("error unmarshaling json request: %s", err.Error()))
+	}
+
+	var record CredentialRecordInterface
+
+	switch g.Type {
+	case CertificateType:
+		record = &CertificateRecord{}
+	case PasswordType:
+		// PasswordRecords are just fancy strings and can't be initialized like structs so we gotta do this
+		var passRecord PasswordRecord
+		record = &passRecord
+	case SshKeypairType:
+		record = &SshKeypairRecord{}
+	case RsaKeypairType:
+		record = &RsaKeypairRecord{}
+	default:
+		return CredentialSetRequest{}, errors.New(fmt.Sprintf("credential set request type: %s not supported! Must be one of: %s, %s, %s, %s", g.Type, CertificateType, PasswordType, SshKeypairType, RsaKeypairType))
+	}
+
+	err = json.Unmarshal(g.Value, &record)
+
+	return CredentialSetRequest{
+		Name:   g.Name,
+		Type:   g.Type,
+		Record: record,
+	}, err
+}
+
+func ParseCredentialGenerationRequest(requestBody []byte) (CredentialGenerationRequest, error) {
+	var g GenericCredentialGenerationRequest
 	err := json.Unmarshal([]byte(requestBody), &g)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("error unmarshaling json request: %s", err.Error()))
 	}
+
+	var req CredentialGenerationRequest
 	switch g.Type {
 	case CertificateType:
-		var certificate CertificateRequest
-		err = json.Unmarshal(requestBody, &certificate)
-		return &certificate, err
+		req = &CertificateRequest{}
 	case PasswordType:
-		var password PasswordRequest
-		err = json.Unmarshal(requestBody, &password)
-		return &password, err
+		req = &PasswordRequest{}
 	case SshKeypairType:
-		var ssh SshKeypairRequest
-		err = json.Unmarshal(requestBody, &ssh)
-		return &ssh, err
+		req = &SshKeypairRequest{}
 	case RsaKeypairType:
-		var rsa RsaKeypairRequest
-		err = json.Unmarshal(requestBody, &rsa)
-		return &rsa, err
+		req = &RsaKeypairRequest{}
 	default:
 		return nil, errors.New(fmt.Sprintf("credential request type: %s not supported! Must be one of: %s, %s, %s, %s", g.Type, CertificateType, PasswordType, SshKeypairType, RsaKeypairType))
 	}
+
+	err = json.Unmarshal(requestBody, &req)
+	return req, err
 }
 
 func ParseSecretResponse(vaultSecretResponse vault.SecretResponse) *vault.SecretResponse {

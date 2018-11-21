@@ -23,6 +23,7 @@ const UaaExpectedAudience = "config_server"
 const UaaSigningKeyRefreshInterval = 24 * time.Hour // get updated key information once a day
 
 type UaaClient struct {
+	Enabled        bool
 	Endpoints      *UaaEndpoints
 	Username       string
 	Password       string
@@ -79,6 +80,7 @@ func GetUaaClient(vcfcsConfig config.Configuration) *UaaClient {
 	}
 
 	client := &UaaClient{
+		Enabled:  vcfcsConfig.Uaa.Enabled,
 		Username: vcfcsConfig.Uaa.Username,
 		Password: vcfcsConfig.Uaa.Password,
 		Endpoints: &UaaEndpoints{
@@ -148,8 +150,7 @@ func (uaa *UaaClient) AuthMiddleware() echo.MiddlewareFunc {
 		SigningMethod: uaa.SigningKeyData.Alg,
 		AuthScheme:    UaaAuthScheme,
 		Skipper: func(c echo.Context) bool {
-			// don't require authentication for the health checking endpoint
-			return c.Request().RequestURI == health.HealthCheckUri
+			return !uaa.Enabled || c.Request().RequestURI == health.HealthCheckUri
 		},
 		// JWT middleware handles basic validity checks, this successhandler is our custom audience check since UAA
 		// returns a []string for the aud claim so single users can access multiple resources, the consequence is we can't

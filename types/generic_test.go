@@ -8,18 +8,18 @@ import (
 )
 
 var _ = Describe("Generic", func() {
-	Describe("ParseGenericCredentialPostRequest", func() {
+	Describe("ParseCredentialGenerationRequest", func() {
 		Context("valid certificate requests", func() {
 			It("parses a certificate request object", func() {
-				credential, err := vcfcsTypes.ParseGenericCredentialPostRequest([]byte(fakes.RegularCertRequestBody))
+				credential, err := vcfcsTypes.ParseCredentialGenerationRequest([]byte(fakes.RegularCertRequestBody))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(credential).To(BeAssignableToTypeOf((*vcfcsTypes.CertificateRequest)(nil)))
 
-				credential, err = vcfcsTypes.ParseGenericCredentialPostRequest([]byte(fakes.IntermediateCaRequestBody))
+				credential, err = vcfcsTypes.ParseCredentialGenerationRequest([]byte(fakes.IntermediateCaRequestBody))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(credential).To(BeAssignableToTypeOf((*vcfcsTypes.CertificateRequest)(nil)))
 
-				credential, err = vcfcsTypes.ParseGenericCredentialPostRequest([]byte(fakes.RootCaRequestBody))
+				credential, err = vcfcsTypes.ParseCredentialGenerationRequest([]byte(fakes.RootCaRequestBody))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(credential).To(BeAssignableToTypeOf((*vcfcsTypes.CertificateRequest)(nil)))
 			})
@@ -27,7 +27,7 @@ var _ = Describe("Generic", func() {
 
 		Context("valid password requests", func() {
 			It("parses a password request object", func() {
-				credential, err := vcfcsTypes.ParseGenericCredentialPostRequest([]byte(fakes.PasswordPostRequestBody))
+				credential, err := vcfcsTypes.ParseCredentialGenerationRequest([]byte(fakes.PasswordPostRequestBody))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(credential).To(BeAssignableToTypeOf((*vcfcsTypes.PasswordRequest)(nil)))
 			})
@@ -35,7 +35,7 @@ var _ = Describe("Generic", func() {
 
 		Context("valid ssh key requests", func() {
 			It("parses a ssh keypair object", func() {
-				credential, err := vcfcsTypes.ParseGenericCredentialPostRequest([]byte(fakes.SshKeypairRequestBody))
+				credential, err := vcfcsTypes.ParseCredentialGenerationRequest([]byte(fakes.SshKeypairRequestBody))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(credential).To(BeAssignableToTypeOf((*vcfcsTypes.SshKeypairRequest)(nil)))
 			})
@@ -43,7 +43,7 @@ var _ = Describe("Generic", func() {
 
 		Context("valid rsa key requests", func() {
 			It("parses a rsa keypair object", func() {
-				credential, err := vcfcsTypes.ParseGenericCredentialPostRequest([]byte(fakes.RsaKeyPairRequestBody))
+				credential, err := vcfcsTypes.ParseCredentialGenerationRequest([]byte(fakes.RsaKeyPairRequestBody))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(credential).To(BeAssignableToTypeOf((*vcfcsTypes.RsaKeypairRequest)(nil)))
 			})

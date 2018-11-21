@@ -29,7 +29,7 @@ func ListenAndServe(vcfcsConfig config.Configuration) {
 
 	uaaClient := auth.GetUaaClient(vcfcsConfig)
 
-	// Support UAA Authorization (and broad authentication for now too)
+	// Support UAA Authorization if enabled (and broad authentication for now too)
 	// Will allow connections if JWT contains the expected audience claim
 	e.Use(uaaClient.AuthMiddleware())
 
@@ -51,6 +51,7 @@ func ListenAndServe(vcfcsConfig config.Configuration) {
 	e.GET(health.HealthCheckUri, health.HealthCheckHandler)
 
 	e.POST("/v1/data", dataPostHandler)
+	e.PUT("/v1/data", dataPutHandler)
 	e.GET("/v1/data/:id", dataGetByIdHandler)
 	e.GET("/v1/data", dataGetByNameHandler)
 	e.DELETE("v1/data", dataDeleteHandler)

@@ -24,7 +24,12 @@ func dataGetByNameHandler(ctx echo.Context) error {
 		context.Log.Errorf("problem fetching secret by name: %s %s", name, err)
 		return err
 	}
-	return ctx.JSON(http.StatusOK, secretResponse)
+	parsedResponse := vcfcsTypes.ParseSecretResponse(secretResponse)
+	return ctx.JSON(http.StatusOK, struct {
+		Data []*vault.SecretResponse `json:"data"`
+	}{
+		Data: []*vault.SecretResponse{parsedResponse},
+	})
 }
 
 func dataGetByIdHandler(ctx echo.Context) error {
@@ -57,7 +62,7 @@ func dataPostHandler(ctx echo.Context) error {
 
 	context.Log.Debugf("request: %s", requestBody)
 
-	credentialRequest, err := vcfcsTypes.ParseGenericCredentialPostRequest(requestBody)
+	credentialRequest, err := vcfcsTypes.ParseCredentialGenerationRequest(requestBody)
 	if err != nil {
 		context.Log.Error("request error: ", err)
 		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, err.Error()))
@@ -98,4 +103,28 @@ func dataDeleteHandler(ctx echo.Context) error {
 		return err
 	}
 	return ctx.NoContent(http.StatusNoContent)
+}
+
+func dataPutHandler(ctx echo.Context) error {
+	context := ctx.(*VcfcsContext)
+	requestBody, err := ioutil.ReadAll(ctx.Request().Body)
+	if err != nil {
+		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, err))
+		return err
+	}
+
+	context.Log.Debugf("request: %s", requestBody)
+	setRequest, err := vcfcsTypes.ParseCredentialSetRequest(requestBody)
+	if err != nil {
+		context.Log.Error("request error: ", err)
+		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, err.Error()))
+		return err
+	}
+	response, err := setRequest.Record.Store(setRequest.Name)
+	if err != nil {
+		context.Log.Error("server error: ", err)
+		ctx.Error(echo.NewHTTPError(http.StatusInternalServerError, err.Error()))
+		return err
+	}
+	return ctx.JSON(http.StatusOK, &response)
 }
