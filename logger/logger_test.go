@@ -1,12 +1,12 @@
 package logger_test
 
 import (
-	. "github.com/zipcar/vault-cfcs/logger"
+	. "github.com/zipcar/bosh-vault/logger"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
-	"github.com/zipcar/vault-cfcs/config"
+	"github.com/zipcar/bosh-vault/config"
 )
 
 var _ = Describe("Logger", func() {

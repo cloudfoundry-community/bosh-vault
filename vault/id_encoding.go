@@ -12,7 +12,7 @@ package vault
 import (
 	"encoding/base64"
 	"encoding/json"
-	"github.com/zipcar/vault-cfcs/logger"
+	"github.com/zipcar/bosh-vault/logger"
 )
 
 type VersionedSecretMetaData struct {

@@ -3,11 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/zipcar/vault-cfcs/config"
-	"github.com/zipcar/vault-cfcs/logger"
-	"github.com/zipcar/vault-cfcs/server"
-	"github.com/zipcar/vault-cfcs/vault"
-	"github.com/zipcar/vault-cfcs/version"
+	"github.com/zipcar/bosh-vault/config"
+	"github.com/zipcar/bosh-vault/logger"
+	"github.com/zipcar/bosh-vault/server"
+	"github.com/zipcar/bosh-vault/vault"
+	"github.com/zipcar/bosh-vault/version"
 	"os"
 )
 
@@ -17,7 +17,7 @@ func main() {
 	flag.Parse()
 
 	if *showVersionAndExit {
-		fmt.Println(fmt.Sprintf("vault-cfcs version: %s", version.Version))
+		fmt.Println(fmt.Sprintf("bosh-vault version: %s", version.Version))
 		return
 	}
 
@@ -30,7 +30,7 @@ func main() {
 	vcfcsConfig := config.GetConfig(configPath)
 
 	logger.InitializeLogger(vcfcsConfig)
-	logger.Log.Infof("Hello world. I am vault-cfcs version %s", version.Version)
+	logger.Log.Infof("Hello world. I am bosh-vault version %s", version.Version)
 	logger.Log.Debugf("Config: %+v", vcfcsConfig)
 
 	vault.InitializeClient(vcfcsConfig)

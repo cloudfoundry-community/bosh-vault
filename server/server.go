@@ -4,10 +4,10 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/sirupsen/logrus"
-	"github.com/zipcar/vault-cfcs/auth"
-	"github.com/zipcar/vault-cfcs/config"
-	"github.com/zipcar/vault-cfcs/health"
-	"github.com/zipcar/vault-cfcs/logger"
+	"github.com/zipcar/bosh-vault/auth"
+	"github.com/zipcar/bosh-vault/config"
+	"github.com/zipcar/bosh-vault/health"
+	"github.com/zipcar/bosh-vault/logger"
 	"golang.org/x/net/context"
 	"os"
 	"os/signal"
@@ -57,14 +57,14 @@ func ListenAndServe(vcfcsConfig config.Configuration) {
 	e.DELETE("v1/data", dataDeleteHandler)
 
 	if vcfcsConfig.Tls.Cert == "" || vcfcsConfig.Tls.Key == "" {
-		logger.Log.Fatal("unable to start vault-cfcs without tls_cert_path and tls_key_path being set")
+		logger.Log.Fatal("unable to start bosh-vault without tls_cert_path and tls_key_path being set")
 	}
 
 	// Start server
 	go func() {
-		logger.Log.Infof("starting vault-cfcs api server at %s", vcfcsConfig.ApiListenAddress)
+		logger.Log.Infof("starting bosh-vault api server at %s", vcfcsConfig.ApiListenAddress)
 		if err := e.StartTLS(vcfcsConfig.ApiListenAddress, vcfcsConfig.Tls.Cert, vcfcsConfig.Tls.Key); err != nil {
-			logger.Log.Info("shutting down the vault-cfcs api server")
+			logger.Log.Info("shutting down the bosh-vault api server")
 		}
 	}()
 
@@ -73,7 +73,7 @@ func ListenAndServe(vcfcsConfig config.Configuration) {
 	signal.Notify(quit, os.Interrupt)
 	<-quit
 	// Gracefully shutdown the server if it has not shutdown within 10 seconds then force it to shutdown
-	logger.Log.Info("received shutdown signal, shutting down the vault-cfcs api server")
+	logger.Log.Info("received shutdown signal, shutting down the bosh-vault api server")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(vcfcsConfig.ShutdownTimeoutSeconds)*time.Second)
 	defer cancel()
 	if err := e.Shutdown(ctx); err != nil {

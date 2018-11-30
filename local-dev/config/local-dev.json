@@ -9,7 +9,7 @@
   "uaa": {
     "enabled": false,
     "username": "director_config_server",
-    "password": "testing-vault-cfcs",
+    "password": "testing-bosh-vault",
     "ca": "./local-dev/certs/local-dev-director-ca.crt",
     "skipverify": false
   },

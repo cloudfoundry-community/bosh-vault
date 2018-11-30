@@ -5,7 +5,7 @@
     authorized-grant-types: client_credentials
     scope: ""
     authorities: config_server.admin, uaa.resource
-    secret: testing-vault-cfcs
+    secret: testing-bosh-vault
 
 - type: replace
   path: /instance_groups/name=bosh/properties/director/config_server?
@@ -18,7 +18,7 @@
       url: "https://((internal_ip)):8443"
       ca_cert: ((uaa_ssl.ca))
       client_id: director_config_server
-      client_secret: testing-vault-cfcs
+      client_secret: testing-bosh-vault
 
 # set a vcap password to a known value (c1oudc0w) so folks can ssh onto the director and read logs easily
 - type: replace

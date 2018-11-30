@@ -6,8 +6,8 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"github.com/mitchellh/mapstructure"
-	"github.com/zipcar/vault-cfcs/logger"
-	"github.com/zipcar/vault-cfcs/vault"
+	"github.com/zipcar/bosh-vault/logger"
+	"github.com/zipcar/bosh-vault/vault"
 	"golang.org/x/crypto/ssh"
 )
 

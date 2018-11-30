@@ -2,7 +2,7 @@ package logger
 
 import (
 	"github.com/sirupsen/logrus"
-	"github.com/zipcar/vault-cfcs/config"
+	"github.com/zipcar/bosh-vault/config"
 	"os"
 )
 

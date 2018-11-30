@@ -10,7 +10,7 @@ init: ## Installs developer dependencies
 
 .PHONY: build
 build: fmt ## Builds the binary
-	@go build -o bin/vault-cfcs
+	@go build -o bin/bosh-vault
 
 .PHONY: run
 run: build ## Builds and runs the binary using local-dev settings (requires running bosh-lite setup)
@@ -53,4 +53,4 @@ destroy: ## Burns down local dev environment
 	-rm -r ./local-dev/certs/*
 	-rm -r ./local-dev/vars/*
 	-blite destroy
-	-pkill vault-cfcs
+	-pkill bosh-vault

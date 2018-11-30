@@ -2,7 +2,7 @@ package types
 
 import (
 	"github.com/sethvargo/go-password/password"
-	"github.com/zipcar/vault-cfcs/vault"
+	"github.com/zipcar/bosh-vault/vault"
 )
 
 const PasswordType = "password"

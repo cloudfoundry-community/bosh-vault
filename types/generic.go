@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/zipcar/vault-cfcs/vault"
+	"github.com/zipcar/bosh-vault/vault"
 )
 
 type GenericCredentialGenerationRequest struct {

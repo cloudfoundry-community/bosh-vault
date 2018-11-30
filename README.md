@@ -1,7 +1,7 @@
-# Vault CloudFoundry Config Server
+# Bosh Vault
 This repo is an attempt to make an implementation of the config server API using Vault as a backend. It is a work in progress and should not be used.
 
-[![CircleCI](https://circleci.com/gh/Zipcar/vault-cfcs/tree/master.svg?style=svg)](https://circleci.com/gh/Zipcar/vault-cfcs/tree/master)
+[![CircleCI](https://circleci.com/gh/Zipcar/bosh-vault/tree/master.svg?style=svg)](https://circleci.com/gh/Zipcar/bosh-vault/tree/master)
 
 # Resources
   - [Config server api documentation](https://github.com/cloudfoundry/config-server/blob/master/docs/api.md)
@@ -17,7 +17,7 @@ The Vault Cloudfoundry Config Server is meant to be run alongside Vault and prox
 This project is written in Go and the below workflow assumes you have a functional Go development environment setup. 
 We do not yet use modules but will convert to them once they are more widely adopted. 
 
- 1. Clone this repo into `$GOPATH/src/github.com/zipcar/vault-cfcs`
+ 1. Clone this repo into `$GOPATH/src/github.com/zipcar/bosh-vault`
  1. Run `make` to see the available workflow commands.
  1. Run `make test` to run tests locally.
 
@@ -36,16 +36,16 @@ do anything you'd otherwise be able to do with a bosh director. Resources used t
 director are in the `local-dev` directory.
 
 ### Option 1: All-In-One Test Deploys
- 1. Run `make bosh-lite` to setup a local bosh-lite director running UAA and configured to communicate with a local vault-cfcs binary
+ 1. Run `make bosh-lite` to setup a local bosh-lite director running UAA and configured to communicate with a local bosh-vault binary
  1. Run `make run` to start the config server
  1. Run `make test-deploy-nginx` to deploy NGINX that will serve a single page that is filled with plain text credentials to show they can all be generated. 
  
 ### Option 2: Just The Director
- 1. Run `make bosh-lite` to setup a local bosh-lite director running UAA and configured to communicate with a local vault-cfcs binary
+ 1. Run `make bosh-lite` to setup a local bosh-lite director running UAA and configured to communicate with a local bosh-vault binary
  1. Run `make run` to start the config server
  1. Run `eval $(./bin/blite env-eval)` to seed your terminal's environment with the credentials of your local bosh director so you can use standard `bosh` commands
  
-### Option 3: Blite/vault-cfcs Power User
+### Option 3: Blite/bosh-vault Power User
  1. Make sure the certs you want to use are in `local-dev/certs` (the next step will generate default certs if they don't exist)
  1. Run the compiled binary using your desired configuration (or the default in `local-dev/config`)
  1. Run `blite create` passing in operator and vars files using the `BLITE_OPS_FILE_GLOB` and `BLITE_VARS_FILE_GLOB` environment variables, at a minimum you'll need what is captured in `local-dev/operators` and `local-dev/vars`. Alternatively just add operator/vars files directly to those directories using the same naming convention.
@@ -66,7 +66,7 @@ a new director with fresh certs.
 
 For the brave, it is possible to manually fix cert mismatch problems by deleting in `local-dev/certs/local-dev.*`, running 
 `make local-certs` to generate new ones, replacing `/var/vcap/jobs/director/config/config_server_ca.cert` and running 
-`monit restart all` on the director then restarting vault-cfcs with `make run` but it's probably a better idea to just 
+`monit restart all` on the director then restarting bosh-vault with `make run` but it's probably a better idea to just 
 destroy and recreate, it's fast and less error prone. Note that if you're reusing a shell session you may need to re-run
 `eval $(./bin/blite env-eval)` to ensure your `bosh` command can communicate with the new director.
 

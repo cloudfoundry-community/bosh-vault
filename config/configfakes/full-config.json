@@ -9,7 +9,7 @@
   "uaa": {
     "address": "https://uaa.biz:8443",
     "username": "director_config_server",
-    "password": "testing-vault-cfcs",
+    "password": "testing-bosh-vault",
     "timeout": 10,
     "ca": "./local-dev/certs/local-dev-director-ca.crt",
     "skipverify": false

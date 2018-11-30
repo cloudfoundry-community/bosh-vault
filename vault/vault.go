@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/vault/api"
-	"github.com/zipcar/vault-cfcs/config"
-	"github.com/zipcar/vault-cfcs/logger"
+	"github.com/zipcar/bosh-vault/config"
+	"github.com/zipcar/bosh-vault/logger"
 	"strings"
 	"time"
 )

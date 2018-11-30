@@ -4,7 +4,7 @@ jobs:
   build:
     docker:
     - image: circleci/golang:1.10
-    working_directory: /go/src/github.com/zipcar/vault-cfcs
+    working_directory: /go/src/github.com/zipcar/bosh-vault
     steps:
     - checkout
     - run: make test

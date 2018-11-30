@@ -1,7 +1,7 @@
 package config_test
 
 import (
-	"github.com/zipcar/vault-cfcs/config"
+	"github.com/zipcar/bosh-vault/config"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/labstack/echo"
-	vcfcsTypes "github.com/zipcar/vault-cfcs/types"
-	"github.com/zipcar/vault-cfcs/vault"
+	vcfcsTypes "github.com/zipcar/bosh-vault/types"
+	"github.com/zipcar/bosh-vault/vault"
 	"io/ioutil"
 	"net/http"
 )

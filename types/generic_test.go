@@ -3,8 +3,8 @@ package types_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	vcfcsTypes "github.com/zipcar/vault-cfcs/types"
-	fakes "github.com/zipcar/vault-cfcs/types/typesfakes"
+	vcfcsTypes "github.com/zipcar/bosh-vault/types"
+	fakes "github.com/zipcar/bosh-vault/types/typesfakes"
 )
 
 var _ = Describe("Generic", func() {
