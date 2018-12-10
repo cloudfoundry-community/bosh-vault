@@ -1,6 +1,8 @@
 package vault
 
 import (
+	"errors"
+	"fmt"
 	"github.com/hashicorp/vault/api"
 	"io"
 )
@@ -37,4 +39,18 @@ func kvReadRequest(client *api.Client, path string, params map[string]string) (*
 	}
 
 	return api.ParseSecret(resp.Body)
+}
+
+func kvGetMetadata(client *api.Client, name string) (*api.Secret, error) {
+	metadataPath := parseMetaDataPath(name)
+	metadata, err := client.Logical().Read(metadataPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if metadata == nil {
+		return nil, errors.New(fmt.Sprintf("no metadata available for %s", name))
+	}
+
+	return metadata, nil
 }

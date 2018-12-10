@@ -170,7 +170,7 @@ func getRootCaAndKeyByName(caName string) (*x509.Certificate, *rsa.PrivateKey, e
 	rootCaCert := &x509.Certificate{}
 	rootCaKey := &rsa.PrivateKey{}
 
-	rawCaResponse, err := vault.FetchSecretByName(caName)
+	rawCaResponse, err := vault.GetLatestByName(caName)
 	if err != nil {
 		return rootCaCert, rootCaKey, err
 	}

@@ -2,6 +2,7 @@ package vault
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/hashicorp/vault/api"
 	"github.com/zipcar/bosh-vault/config"
@@ -30,18 +31,52 @@ func InitializeClient(vcfcsConfig config.Configuration) {
 	Client.SetClientTimeout(time.Duration(vcfcsConfig.Vault.Timeout) * time.Second)
 }
 
-func FetchSecretByName(name string) (SecretResponse, error) {
-	fullPath := getFullPath(name)
+func GetLatestByName(name string) (SecretResponse, error) {
+	fullPath := parseDataPath(name)
 	secretRequest := VersionedSecretMetaData{
 		Name:    name,
 		Path:    fullPath,
-		Version: json.Number("0"), // version 0 will fetch latest which is the expected behavior when fetching by name
+		Version: json.Number("0"),
 	}
 	id, _ := EncodeId(secretRequest)
-	return FetchSecretById(id)
+	return GetById(id)
 }
 
-func FetchSecretById(id string) (SecretResponse, error) {
+func GetAllByName(name string) ([]SecretResponse, error) {
+	fullPath := parseDataPath(name)
+	secretVersions := make([]SecretResponse, 0)
+
+	metadata, err := kvGetMetadata(Client, name)
+	if err != nil {
+		return secretVersions, err
+	}
+
+	versionsRaw, ok := metadata.Data["versions"]
+	if !ok || versionsRaw == nil {
+		return secretVersions, errors.New(fmt.Sprintf("Could not get version information for %s", name))
+	}
+
+	versionCount := len(versionsRaw.(map[string]interface{}))
+
+	for i := versionCount; i > 0; i-- {
+		secretRequest := VersionedSecretMetaData{
+			Name:    name,
+			Path:    fullPath,
+			Version: json.Number(fmt.Sprintf("%d", i)),
+		}
+		id, _ := EncodeId(secretRequest)
+		secretResp, err := GetById(id)
+		if err != nil {
+			logger.Log.Errorf("Problem fetching secret: %+v", secretRequest)
+		} else {
+			secretVersions = append(secretVersions, secretResp)
+		}
+	}
+
+	return secretVersions, err
+}
+
+func GetById(id string) (SecretResponse, error) {
 	var response SecretResponse
 	decodedId, err := DecodeId(id)
 	if err != nil {
@@ -67,7 +102,7 @@ func FetchSecretById(id string) (SecretResponse, error) {
 }
 
 func DeleteSecretByName(name string) error {
-	_, err := Client.Logical().Delete(getFullPath(name))
+	_, err := Client.Logical().Delete(parseDataPath(name))
 	if err != nil {
 		logger.Log.Error(err)
 	}
@@ -79,7 +114,7 @@ func StoreSecret(name string, value interface{}) (string, error) {
 		"data":    value,
 		"options": map[string]interface{}{},
 	}
-	path := getFullPath(name)
+	path := parseDataPath(name)
 	secret, err := Client.Logical().Write(path, secretValue)
 	if err != nil {
 		logger.Log.Error(err)
@@ -102,8 +137,15 @@ func StoreSecret(name string, value interface{}) (string, error) {
 	return id, nil
 }
 
-func getFullPath(name string) string {
+func NameToPath(name string) string {
 	// todo: spaces are a problem for the network path but full url encoding is a problem for Vault... see if there are other characters and solve this encoding issue
-	escapedName := strings.Replace(name, " ", "", -1)
-	return fmt.Sprintf("secret/data%s", escapedName)
+	return strings.Replace(name, " ", "", -1)
+}
+
+func parseDataPath(name string) string {
+	return fmt.Sprintf("secret/data%s", NameToPath(name))
+}
+
+func parseMetaDataPath(name string) string {
+	return fmt.Sprintf("secret/metadata%s", NameToPath(name))
 }

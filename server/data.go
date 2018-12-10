@@ -19,16 +19,21 @@ func dataGetByNameHandler(ctx echo.Context) error {
 		return errors.New("name query param not passed to data?name handler")
 	}
 	context.Log.Debugf("request to GET /v1/data?name=%s", name)
-	secretResponse, err := vault.FetchSecretByName(name)
+	secretResponses, err := vault.GetAllByName(name)
 	if err != nil {
 		context.Log.Errorf("problem fetching secret by name: %s %s", name, err)
 		return err
 	}
-	parsedResponse := vcfcsTypes.ParseSecretResponse(secretResponse)
+
+	responseData := make([]*vault.SecretResponse, 0)
+	for _, secret := range secretResponses {
+		responseData = append(responseData, vcfcsTypes.ParseSecretResponse(secret))
+	}
+
 	return ctx.JSON(http.StatusOK, struct {
 		Data []*vault.SecretResponse `json:"data"`
 	}{
-		Data: []*vault.SecretResponse{parsedResponse},
+		Data: responseData,
 	})
 }
 
@@ -41,7 +46,7 @@ func dataGetByIdHandler(ctx echo.Context) error {
 		return errors.New("id uri param not passed to data/:id handler")
 	}
 	context.Log.Debugf("request to /v1/data/%s", id)
-	vaultSecretResponse, err := vault.FetchSecretById(id)
+	vaultSecretResponse, err := vault.GetById(id)
 	if err != nil {
 		context.Log.Errorf("problem fetching secret by id: %s %s", id, err)
 		return err
