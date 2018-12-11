@@ -25,11 +25,11 @@ can be passed using the flag: `-config` and passing a path to a JSON or YAML fil
 ```
 api_listen_addr: 0.0.0.0:1337 (Where the config server should bind to)
 log_level: ERROR 
-shutdown_timeout_seconds: 30 (How long the config server should drain when shutting down)
+shutdown_timeout_seconds: 30 (How many seconds the config server should drain when shutting down)
 vault:
   address: NO_DEFAULT
   token: NO_DEFAULT
-  timeout: 30 (How long we should wait when contacting Vault before timing out)
+  timeout: 30 (How many seconds we should wait when contacting Vault before timing out)
   prefix: secret (The name of the KV mount in Vault)
 tls:
   cert: NO_DEFAULT (The cert used to secure the config server api)
@@ -39,7 +39,7 @@ uaa:
   address: NO_DEFAULT (The address of the UAA server to communicate with)
   timeout: 10 (How many seconds to wait before timing out connections to UAA)
   ca: NO_DEFAULT (CA to trust when connecting to UAA)
-  skipverify: false (Should TLS trust be verified)
+  skipverify: false (Whether or not to skip verifying TLS trust)
   audienceclaim: config_server (Expected audience claim on a given JWT)
 ```
 
