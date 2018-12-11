@@ -25,8 +25,6 @@ const UaaSigningKeyRefreshInterval = 24 * time.Hour // get updated key informati
 type UaaClient struct {
 	Enabled        bool
 	Endpoints      *UaaEndpoints
-	Username       string
-	Password       string
 	httpClient     *http.Client
 	SigningKeyData TokenKeyResponse
 }
@@ -80,9 +78,7 @@ func GetUaaClient(bvConfig config.Configuration) *UaaClient {
 	}
 
 	client := &UaaClient{
-		Enabled:  bvConfig.Uaa.Enabled,
-		Username: bvConfig.Uaa.Username,
-		Password: bvConfig.Uaa.Password,
+		Enabled: bvConfig.Uaa.Enabled,
 		Endpoints: &UaaEndpoints{
 			CheckToken: fmt.Sprintf("%s/check_token", bvConfig.Uaa.Address),
 			TokenKey:   fmt.Sprintf("%s/token_key", bvConfig.Uaa.Address),
