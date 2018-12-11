@@ -4,14 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/labstack/echo"
-	vcfcsTypes "github.com/zipcar/bosh-vault/types"
+	bvTypes "github.com/zipcar/bosh-vault/types"
 	"github.com/zipcar/bosh-vault/vault"
 	"io/ioutil"
 	"net/http"
 )
 
 func dataGetByNameHandler(ctx echo.Context) error {
-	context := ctx.(*VcfcsContext)
+	context := ctx.(*BvContext)
 	name := ctx.QueryParam("name")
 	if name == "" {
 		// this should never happen because of echo's router
@@ -27,7 +27,7 @@ func dataGetByNameHandler(ctx echo.Context) error {
 
 	responseData := make([]*vault.SecretResponse, 0)
 	for _, secret := range secretResponses {
-		responseData = append(responseData, vcfcsTypes.ParseSecretResponse(secret))
+		responseData = append(responseData, bvTypes.ParseSecretResponse(secret))
 	}
 
 	return ctx.JSON(http.StatusOK, struct {
@@ -38,7 +38,7 @@ func dataGetByNameHandler(ctx echo.Context) error {
 }
 
 func dataGetByIdHandler(ctx echo.Context) error {
-	context := ctx.(*VcfcsContext)
+	context := ctx.(*BvContext)
 	id := ctx.Param("id")
 	if id == "" {
 		// this should never happen because of echo's router
@@ -52,13 +52,13 @@ func dataGetByIdHandler(ctx echo.Context) error {
 		return err
 	}
 
-	secretResp := vcfcsTypes.ParseSecretResponse(vaultSecretResponse)
+	secretResp := bvTypes.ParseSecretResponse(vaultSecretResponse)
 
 	return ctx.JSON(http.StatusOK, secretResp)
 }
 
 func dataPostHandler(ctx echo.Context) error {
-	context := ctx.(*VcfcsContext)
+	context := ctx.(*BvContext)
 	requestBody, err := ioutil.ReadAll(ctx.Request().Body)
 	if err != nil {
 		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, err))
@@ -67,7 +67,7 @@ func dataPostHandler(ctx echo.Context) error {
 
 	context.Log.Debugf("request: %s", requestBody)
 
-	credentialRequest, err := vcfcsTypes.ParseCredentialGenerationRequest(requestBody)
+	credentialRequest, err := bvTypes.ParseCredentialGenerationRequest(requestBody)
 	if err != nil {
 		context.Log.Error("request error: ", err)
 		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, err.Error()))
@@ -94,7 +94,7 @@ func dataPostHandler(ctx echo.Context) error {
 }
 
 func dataDeleteHandler(ctx echo.Context) error {
-	context := ctx.(*VcfcsContext)
+	context := ctx.(*BvContext)
 	name := ctx.QueryParam("name")
 	if name == "" {
 		// this should never happen because of echo's router
@@ -111,7 +111,7 @@ func dataDeleteHandler(ctx echo.Context) error {
 }
 
 func dataPutHandler(ctx echo.Context) error {
-	context := ctx.(*VcfcsContext)
+	context := ctx.(*BvContext)
 	requestBody, err := ioutil.ReadAll(ctx.Request().Body)
 	if err != nil {
 		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, err))
@@ -119,7 +119,7 @@ func dataPutHandler(ctx echo.Context) error {
 	}
 
 	context.Log.Debugf("request: %s", requestBody)
-	setRequest, err := vcfcsTypes.ParseCredentialSetRequest(requestBody)
+	setRequest, err := bvTypes.ParseCredentialSetRequest(requestBody)
 	if err != nil {
 		context.Log.Error("request error: ", err)
 		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, err.Error()))

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	vcfcsTypes "github.com/zipcar/bosh-vault/types"
+	bvTypes "github.com/zipcar/bosh-vault/types"
 	fakes "github.com/zipcar/bosh-vault/types/typesfakes"
 )
 
@@ -13,7 +13,7 @@ var _ = Describe("Certificates", func() {
 	Describe("Certificate Request Methods", func() {
 		Context("A valid CA request", func() {
 			var (
-				certificateRequest vcfcsTypes.CertificateRequest
+				certificateRequest bvTypes.CertificateRequest
 			)
 
 			JustBeforeEach(func() {
@@ -34,7 +34,7 @@ var _ = Describe("Certificates", func() {
 
 		Context("A valid intermediate CA request", func() {
 			var (
-				certificateRequest vcfcsTypes.CertificateRequest
+				certificateRequest bvTypes.CertificateRequest
 			)
 
 			JustBeforeEach(func() {
@@ -55,7 +55,7 @@ var _ = Describe("Certificates", func() {
 
 		Context("A valid regular cert request", func() {
 			var (
-				certificateRequest vcfcsTypes.CertificateRequest
+				certificateRequest bvTypes.CertificateRequest
 			)
 
 			JustBeforeEach(func() {

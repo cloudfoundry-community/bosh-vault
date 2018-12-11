@@ -23,17 +23,17 @@ func main() {
 
 	// If config flag wasn't passed check the environment too, if this is empty too GetConfig can deal with it (use defaults)
 	if *configPath == "" {
-		configFilePathEnvValue := os.Getenv("VCFCS_CONFIG")
+		configFilePathEnvValue := os.Getenv("BV_CONFIG")
 		configPath = &configFilePathEnvValue
 	}
 
-	vcfcsConfig := config.GetConfig(configPath)
+	bvConfig := config.GetConfig(configPath)
 
-	logger.InitializeLogger(vcfcsConfig)
+	logger.InitializeLogger(bvConfig)
 	logger.Log.Infof("Hello world. I am bosh-vault version %s", version.Version)
-	logger.Log.Debugf("Config: %+v", vcfcsConfig)
+	logger.Log.Debugf("Config: %+v", bvConfig)
 
-	vault.InitializeClient(vcfcsConfig)
+	vault.InitializeClient(bvConfig)
 
-	server.ListenAndServe(vcfcsConfig)
+	server.ListenAndServe(bvConfig)
 }

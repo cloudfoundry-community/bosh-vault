@@ -11,8 +11,8 @@
   path: /instance_groups/name=bosh/properties/director/config_server?
   value:
     enabled: true
-    url: ((vault_cfcs_addr))
-    ca_cert: ((vault_cfcs_ca))
+    url: ((bv_addr))
+    ca_cert: ((bv_ca))
 
     uaa:
       url: "https://((internal_ip)):8443"

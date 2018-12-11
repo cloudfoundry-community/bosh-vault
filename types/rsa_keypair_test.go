@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	vcfcsTypes "github.com/zipcar/bosh-vault/types"
+	bvTypes "github.com/zipcar/bosh-vault/types"
 	fakes "github.com/zipcar/bosh-vault/types/typesfakes"
 )
 
@@ -12,7 +12,7 @@ var _ = Describe("RSA", func() {
 	Describe("RSA keypair request validation", func() {
 		Context("a valid rsa post request", func() {
 			var (
-				RsaRequest vcfcsTypes.RsaKeypairRequest
+				RsaRequest bvTypes.RsaKeypairRequest
 			)
 
 			BeforeEach(func() {

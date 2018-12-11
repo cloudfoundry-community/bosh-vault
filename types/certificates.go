@@ -19,7 +19,7 @@ import (
 
 const CertificateType = "certificate"
 const CertificateDefaultTtl = 365 * 24 * time.Hour
-const CertificateDefaultOrg = "vault cfcs"
+const CertificateDefaultOrg = "bosh vault"
 const CertificateDefaultCountry = "USA"
 const CertificateDefaultRsaKeyBits = 3072
 

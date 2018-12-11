@@ -19,16 +19,16 @@ type SecretResponse struct {
 
 var Client *api.Client
 
-func InitializeClient(vcfcsConfig config.Configuration) {
+func InitializeClient(bvConfig config.Configuration) {
 	var err error
 	Client, err = api.NewClient(&api.Config{
-		Address: vcfcsConfig.Vault.Address,
+		Address: bvConfig.Vault.Address,
 	})
 	if err != nil {
-		logger.Log.Fatalf("could not communicate with Vault server at %s, %s", vcfcsConfig.Vault.Address, err)
+		logger.Log.Fatalf("could not communicate with Vault server at %s, %s", bvConfig.Vault.Address, err)
 	}
-	Client.SetToken(vcfcsConfig.Vault.Token)
-	Client.SetClientTimeout(time.Duration(vcfcsConfig.Vault.Timeout) * time.Second)
+	Client.SetToken(bvConfig.Vault.Token)
+	Client.SetClientTimeout(time.Duration(bvConfig.Vault.Timeout) * time.Second)
 }
 
 func GetLatestByName(name string) (SecretResponse, error) {

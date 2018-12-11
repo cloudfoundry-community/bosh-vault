@@ -40,24 +40,24 @@ type Configuration struct {
 }
 
 func GetConfig(configFilePath *string) Configuration {
-	var vcfcsConfig Configuration
-	vcfcsConfig.ApiListenAddress = DefaultApiListenAddress
-	vcfcsConfig.LogLevel = DefaultLogLevel
-	vcfcsConfig.ShutdownTimeoutSeconds = DefaultShutdownTimeoutSeconds
-	vcfcsConfig.Uaa.Enabled = true
-	vcfcsConfig.Uaa.Timeout = DefaultUaaConnectionTimeoutSeconds
-	vcfcsConfig.Vault.Timeout = DefaultVaultConnectionTimeoutSeconds
-	vcfcsConfig.Vault.Prefix = DefaultVaultPrefix
+	var bvConfig Configuration
+	bvConfig.ApiListenAddress = DefaultApiListenAddress
+	bvConfig.LogLevel = DefaultLogLevel
+	bvConfig.ShutdownTimeoutSeconds = DefaultShutdownTimeoutSeconds
+	bvConfig.Uaa.Enabled = true
+	bvConfig.Uaa.Timeout = DefaultUaaConnectionTimeoutSeconds
+	bvConfig.Vault.Timeout = DefaultVaultConnectionTimeoutSeconds
+	bvConfig.Vault.Prefix = DefaultVaultPrefix
 
 	if configFilePath == nil || *configFilePath == "" {
-		return vcfcsConfig
+		return bvConfig
 	} else {
 		conf := config.NewConfig()
 		conf.Load(file.NewSource(
 			file.WithPath(*configFilePath),
 		),
-			env.NewSource(env.WithStrippedPrefix("VAULT_CFCS")))
-		conf.Scan(&vcfcsConfig)
-		return vcfcsConfig
+			env.NewSource(env.WithStrippedPrefix("BV")))
+		conf.Scan(&bvConfig)
+		return bvConfig
 	}
 }

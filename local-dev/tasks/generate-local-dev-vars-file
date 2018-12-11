@@ -6,6 +6,6 @@ source ${SCRIPT_PATH}/.shared
 
 
 # ensure cert data is indented using sed
-echo -e "vault_cfcs_ca: |\n$(cat $CERTS_PATH/${x509_NAME}.crt | sed 's/^/  /')" > ${LOCAL_DEV_VARS_PATH}
+echo -e "bv_ca: |\n$(cat $CERTS_PATH/${x509_NAME}.crt | sed 's/^/  /')" > ${LOCAL_DEV_VARS_PATH}
 echo "host_ip: $HOST_IP" >> ${LOCAL_DEV_VARS_PATH}
-echo "vault_cfcs_addr: https://$HOST_IP:1337" >> ${LOCAL_DEV_VARS_PATH}
+echo "bv_addr: https://$HOST_IP:1337" >> ${LOCAL_DEV_VARS_PATH}

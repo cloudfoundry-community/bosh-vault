@@ -47,7 +47,7 @@ type TokenKeyResponse struct {
 	E     string `json:"e"`
 }
 
-func GetUaaClient(vcfcsConfig config.Configuration) *UaaClient {
+func GetUaaClient(bvConfig config.Configuration) *UaaClient {
 
 	// Get the SystemCertPool, continue with an empty pool on error
 	rootCAs, _ := x509.SystemCertPool()
@@ -56,10 +56,10 @@ func GetUaaClient(vcfcsConfig config.Configuration) *UaaClient {
 		rootCAs = x509.NewCertPool()
 	}
 
-	if vcfcsConfig.Uaa.Ca != "" {
-		certs, err := ioutil.ReadFile(vcfcsConfig.Uaa.Ca)
+	if bvConfig.Uaa.Ca != "" {
+		certs, err := ioutil.ReadFile(bvConfig.Uaa.Ca)
 		if err != nil {
-			log.Fatalf("Failed to append %q to RootCAs: %v", vcfcsConfig.Uaa.Ca, err)
+			log.Fatalf("Failed to append %q to RootCAs: %v", bvConfig.Uaa.Ca, err)
 		}
 
 		if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
@@ -68,24 +68,24 @@ func GetUaaClient(vcfcsConfig config.Configuration) *UaaClient {
 	}
 
 	tlsConfig := &tls.Config{
-		InsecureSkipVerify: vcfcsConfig.Uaa.SkipVerify,
+		InsecureSkipVerify: bvConfig.Uaa.SkipVerify,
 		RootCAs:            rootCAs,
 	}
 
 	// Setup a custom transport that trusts our UAA Ca as well as the system's trusted certs
 	customTransport := &http.Transport{TLSClientConfig: tlsConfig}
 	customHttpClient := &http.Client{
-		Timeout:   time.Second * time.Duration(vcfcsConfig.Uaa.Timeout),
+		Timeout:   time.Second * time.Duration(bvConfig.Uaa.Timeout),
 		Transport: customTransport,
 	}
 
 	client := &UaaClient{
-		Enabled:  vcfcsConfig.Uaa.Enabled,
-		Username: vcfcsConfig.Uaa.Username,
-		Password: vcfcsConfig.Uaa.Password,
+		Enabled:  bvConfig.Uaa.Enabled,
+		Username: bvConfig.Uaa.Username,
+		Password: bvConfig.Uaa.Password,
 		Endpoints: &UaaEndpoints{
-			CheckToken: fmt.Sprintf("%s/check_token", vcfcsConfig.Uaa.Address),
-			TokenKey:   fmt.Sprintf("%s/token_key", vcfcsConfig.Uaa.Address),
+			CheckToken: fmt.Sprintf("%s/check_token", bvConfig.Uaa.Address),
+			TokenKey:   fmt.Sprintf("%s/token_key", bvConfig.Uaa.Address),
 		},
 		httpClient: customHttpClient,
 	}
