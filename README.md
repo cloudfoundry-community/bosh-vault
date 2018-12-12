@@ -23,8 +23,9 @@ The bosh-vault binary can be configured in a couple of ways: a configuration fil
 can be passed using the flag: `-config` and passing a path to a JSON or YAML file of the form:
 
 ```
-api_listen_addr: 0.0.0.0:1337 (Where the config server should bind to)
-shutdown_timeout_seconds: 30 (How many seconds the config server should drain when shutting down)
+api:
+  address: 0.0.0.0:1337 (Where the config server should bind to)
+  draintimeout: 30 (How many seconds the config server should drain when shutting down)
 log:
   level: ERROR 
 vault:

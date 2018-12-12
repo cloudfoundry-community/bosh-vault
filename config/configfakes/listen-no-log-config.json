@@ -1,3 +1,5 @@
 {
-  "api_listen_addr": "localhost:2000"
+  "api": {
+    "address": "localhost:2000"
+  }
 }

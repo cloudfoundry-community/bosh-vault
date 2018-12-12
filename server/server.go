@@ -62,8 +62,8 @@ func ListenAndServe(bvConfig config.Configuration) {
 
 	// Start server
 	go func() {
-		logger.Log.Infof("starting bosh-vault api server at %s", bvConfig.ApiListenAddress)
-		if err := e.StartTLS(bvConfig.ApiListenAddress, bvConfig.Tls.Cert, bvConfig.Tls.Key); err != nil {
+		logger.Log.Infof("starting bosh-vault api server at %s", bvConfig.Api.Address)
+		if err := e.StartTLS(bvConfig.Api.Address, bvConfig.Tls.Cert, bvConfig.Tls.Key); err != nil {
 			logger.Log.Info("shutting down the bosh-vault api server")
 		}
 	}()
@@ -74,7 +74,7 @@ func ListenAndServe(bvConfig config.Configuration) {
 	<-quit
 	// Gracefully shutdown the server if it has not shutdown within 10 seconds then force it to shutdown
 	logger.Log.Info("received shutdown signal, shutting down the bosh-vault api server")
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(bvConfig.ShutdownTimeoutSeconds)*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(bvConfig.Api.DrainTimeout)*time.Second)
 	defer cancel()
 	if err := e.Shutdown(ctx); err != nil {
 		logger.Log.Error(err)

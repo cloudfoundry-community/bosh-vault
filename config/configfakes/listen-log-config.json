@@ -1,7 +1,9 @@
 {
-  "api_listen_addr": "localhost:8000",
+  "api": {
+    "address": "localhost:8000",
+    "draintimeout": 10
+  },
   "log": {
     "level": "ERROR"
-  },
-  "shutdown_timeout_seconds": 10
+  }
 }

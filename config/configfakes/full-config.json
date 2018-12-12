@@ -1,9 +1,11 @@
 {
-  "api_listen_addr": "0.0.0.0:1337",
+  "api": {
+    "address": "0.0.0.0:1337",
+    "draintimeout": 10
+  },
   "log": {
     "level": "ERROR"
   },
-  "shutdown_timeout_seconds": 10,
   "tls": {
     "cert": "./local-dev/certs/local-dev.crt",
     "key": "./local-dev/certs/local-dev.key"
