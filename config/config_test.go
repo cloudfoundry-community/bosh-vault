@@ -24,13 +24,13 @@ var _ = Describe("Config", func() {
 			It("can read a JSON config correctly", func() {
 				bvConfig := config.GetConfig(&jsonConfigPath)
 				Expect(bvConfig.ApiListenAddress).To(Equal("localhost:8000"))
-				Expect(bvConfig.LogLevel).To(Equal("ERROR"))
+				Expect(bvConfig.Log.Level).To(Equal("ERROR"))
 				Expect(bvConfig.ShutdownTimeoutSeconds).To(Equal(10))
 			})
 			It("can read a YML config correctly", func() {
 				bvConfig := config.GetConfig(&yamlConfigPath)
 				Expect(bvConfig.ApiListenAddress).To(Equal("localhost:8001"))
-				Expect(bvConfig.LogLevel).To(Equal("ERROR"))
+				Expect(bvConfig.Log.Level).To(Equal("ERROR"))
 				Expect(bvConfig.ShutdownTimeoutSeconds).To(Equal(10))
 			})
 		})
@@ -47,12 +47,12 @@ var _ = Describe("Config", func() {
 			It("can read a JSON config correctly", func() {
 				bvConfig := config.GetConfig(&jsonConfigPath)
 				Expect(bvConfig.ApiListenAddress).To(Equal("localhost:2000"))
-				Expect(bvConfig.LogLevel).To(Equal(config.DefaultLogLevel))
+				Expect(bvConfig.Log.Level).To(Equal(config.DefaultLogLevel))
 			})
 			It("can read a YML config correctly", func() {
 				bvConfig := config.GetConfig(&yamlConfigPath)
 				Expect(bvConfig.ApiListenAddress).To(Equal("localhost:2001"))
-				Expect(bvConfig.LogLevel).To(Equal(config.DefaultLogLevel))
+				Expect(bvConfig.Log.Level).To(Equal(config.DefaultLogLevel))
 			})
 		})
 		Context("a partial config with only log level specified", func() {
@@ -68,19 +68,19 @@ var _ = Describe("Config", func() {
 			It("can read a JSON config correctly", func() {
 				bvConfig := config.GetConfig(&jsonConfigPath)
 				Expect(bvConfig.ApiListenAddress).To(Equal(config.DefaultApiListenAddress))
-				Expect(bvConfig.LogLevel).To(Equal("ERROR"))
+				Expect(bvConfig.Log.Level).To(Equal("ERROR"))
 			})
 			It("can read a YML config correctly", func() {
 				bvConfig := config.GetConfig(&yamlConfigPath)
 				Expect(bvConfig.ApiListenAddress).To(Equal(config.DefaultApiListenAddress))
-				Expect(bvConfig.LogLevel).To(Equal("ERROR"))
+				Expect(bvConfig.Log.Level).To(Equal("ERROR"))
 			})
 		})
 		Context("no config file specified", func() {
 			It("correctly returns defaults", func() {
 				bvConfig := config.GetConfig(nil)
 				Expect(bvConfig.ApiListenAddress).To(Equal(config.DefaultApiListenAddress))
-				Expect(bvConfig.LogLevel).To(Equal(config.DefaultLogLevel))
+				Expect(bvConfig.Log.Level).To(Equal(config.DefaultLogLevel))
 			})
 		})
 		Context("a non-existent file is specified", func() {
@@ -93,7 +93,7 @@ var _ = Describe("Config", func() {
 			It("correctly returns defaults", func() {
 				bvConfig := config.GetConfig(&fakeConfigPath)
 				Expect(bvConfig.ApiListenAddress).To(Equal(config.DefaultApiListenAddress))
-				Expect(bvConfig.LogLevel).To(Equal(config.DefaultLogLevel))
+				Expect(bvConfig.Log.Level).To(Equal(config.DefaultLogLevel))
 			})
 		})
 	})

@@ -27,14 +27,14 @@ var _ = Describe("Logger", func() {
 			})
 
 			It("correctly interprets the log level string error", func() {
-				bvConfig.LogLevel = errorLevelString
+				bvConfig.Log.Level = errorLevelString
 				InitializeLogger(bvConfig)
 				Expect(Log.Level).To(Equal(logrus.ErrorLevel))
 				Expect(Log.Level).ToNot(Equal(logrus.DebugLevel))
 			})
 
 			It("correctly interprets the log level string ERROR", func() {
-				bvConfig.LogLevel = errorLevelStringCaps
+				bvConfig.Log.Level = errorLevelStringCaps
 				InitializeLogger(bvConfig)
 				Expect(Log.Level).To(Equal(logrus.ErrorLevel))
 				Expect(Log.Level).ToNot(Equal(logrus.DebugLevel))
@@ -42,7 +42,7 @@ var _ = Describe("Logger", func() {
 			})
 
 			It("correctly interprets the log level string ErRoR", func() {
-				bvConfig.LogLevel = errorLevelStringMixed
+				bvConfig.Log.Level = errorLevelStringMixed
 				InitializeLogger(bvConfig)
 				Expect(Log.Level).To(Equal(logrus.ErrorLevel))
 				Expect(Log.Level).ToNot(Equal(logrus.DebugLevel))
@@ -59,7 +59,7 @@ var _ = Describe("Logger", func() {
 				invalidLogLevel = "waka"
 			})
 			It("rejects invalid logging level and defaults to DEBUG, since obviously this user needs help", func() {
-				bvConfig.LogLevel = invalidLogLevel
+				bvConfig.Log.Level = invalidLogLevel
 				InitializeLogger(bvConfig)
 				Expect(Log.Level).To(Equal(logrus.DebugLevel))
 			})

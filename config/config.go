@@ -15,9 +15,11 @@ const DefaultVaultPrefix = "secret"
 
 type Configuration struct {
 	ApiListenAddress       string `json:"api_listen_addr" yaml:"api_listen_addr"`
-	LogLevel               string `json:"log_level" yaml:"log_level"`
 	ShutdownTimeoutSeconds int    `json:"shutdown_timeout_seconds" yaml:"shutdown_timeout_seconds"`
-	Vault                  struct {
+	Log                    struct {
+		Level string `json:"level" yaml:"level"`
+	} `json:"log" yaml:"log"`
+	Vault struct {
 		Address string `json:"address" yaml:"address"`
 		Token   string `json:"token" yaml:"token"`
 		Timeout int    `json:"timeout" yaml:"timeout"`
@@ -40,7 +42,7 @@ type Configuration struct {
 func GetConfig(configFilePath *string) Configuration {
 	var bvConfig Configuration
 	bvConfig.ApiListenAddress = DefaultApiListenAddress
-	bvConfig.LogLevel = DefaultLogLevel
+	bvConfig.Log.Level = DefaultLogLevel
 	bvConfig.ShutdownTimeoutSeconds = DefaultShutdownTimeoutSeconds
 	bvConfig.Uaa.Enabled = true
 	bvConfig.Uaa.Timeout = DefaultUaaConnectionTimeoutSeconds
