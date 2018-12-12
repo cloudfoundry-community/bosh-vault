@@ -16,7 +16,7 @@ the returned data more like Credhub's implementation (creation time, etc). The f
   - Generate RSA Key
   - Delete by name
 
-There is not yet a Bosh release for this project but one will be created soon.
+There is not yet a functional [Bosh release for this project](https://github.com/Zipcar/bosh-vault-release) but it is in development.
 
 # Configuration
 The bosh-vault binary can be configured in a couple of ways: a configuration file or the environment. A configuration file
