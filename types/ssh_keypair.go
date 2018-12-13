@@ -23,7 +23,7 @@ func (record SshKeypairRecord) ToVaultDataInterface() map[string]interface{} {
 		"public_key":             record.PublicKey,
 		"private_key":            record.PrivateKey,
 		"public_key_fingerprint": record.PublicKeyFingerprint,
-		"type": SshKeypairType,
+		"type":                   SshKeypairType,
 	}
 }
 

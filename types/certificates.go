@@ -159,8 +159,8 @@ func newX509CertAndKey(cr *CertificateRequest) (x509.Certificate, *rsa.PrivateKe
 		NotBefore:             now,
 		NotAfter:              notAfter,
 		BasicConstraintsValid: true,
-		IsCA:         cr.Parameters.IsCa,
-		SubjectKeyId: subjectKeyId,
+		IsCA:                  cr.Parameters.IsCa,
+		SubjectKeyId:          subjectKeyId,
 	}
 
 	return cert, privateKey, nil
