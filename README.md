@@ -34,13 +34,13 @@ vault:
   timeout: 30 (How many seconds we should wait when contacting Vault before timing out)
   prefix: secret (The name of the KV mount in Vault)
 tls:
-  cert: NO_DEFAULT (The cert used to secure the config server api)
-  key: NO_DEFUAULT (The key used to secure the config server api)
+  cert: NO_DEFAULT (Path to the cert used to secure the config server api)
+  key: NO_DEFUAULT (Path to the key used to secure the config server api)
 uaa:
   enabled: true (Whether or not the config server should require and verify UAA JWT tokens)
   address: NO_DEFAULT (The address of the UAA server to communicate with)
   timeout: 10 (How many seconds to wait before timing out connections to UAA)
-  ca: NO_DEFAULT (CA to trust when connecting to UAA)
+  ca: NO_DEFAULT (Path to the CA to trust when connecting to UAA)
   skipverify: false (Whether or not to skip verifying TLS trust)
   audienceclaim: config_server (Expected audience claim on a given JWT)
 ```
