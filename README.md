@@ -5,7 +5,7 @@ This repo is an attempt to make an implementation of the config server API using
 
 # Current Progress
 Currently the code is "feature complete" according to the [config server documentation](https://github.com/cloudfoundry/config-server/blob/master/docs/api.md) though there are additional pieces of metadata that could be added to make 
-the returned data more like Credhub's implementation (creation time, etc). The following endpoints are working:
+the returned data more like Credhub's implementation (creation time, etc). The following endpoints are "working":
 
   - Get by id
   - Get by name
@@ -16,7 +16,7 @@ the returned data more like Credhub's implementation (creation time, etc). The f
   - Generate RSA Key
   - Delete by name
 
-There is not yet a functional [Bosh release for this project](https://github.com/Zipcar/bosh-vault-release) but it is in development.
+There is a functional [Bosh release for this project](https://github.com/Zipcar/bosh-vault-release/releases).
 
 # Configuration
 The bosh-vault binary can be configured in a couple of ways: a configuration file or the environment. A configuration file
