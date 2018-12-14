@@ -104,7 +104,7 @@ A long an incomprehensible id to be sure, but it is guaranteed to be:
 This project is written in Go and the below workflow assumes you have a functional Go development environment setup that supports
 the use of Go modules.
 
- 1. Clone this repo into `$GOPATH/src/github.com/zipcar/bosh-vault`
+ 1. Clone this repo and `cd` into it.
  1. Run `make` to see the available workflow commands.
  1. Run `make test` to run tests locally.
 
