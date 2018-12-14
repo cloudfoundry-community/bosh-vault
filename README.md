@@ -101,8 +101,8 @@ A long an incomprehensible id to be sure, but it is guaranteed to be:
   - debuggable
 
 # Contributing/Developer Workflow
-This project is written in Go and the below workflow assumes you have a functional Go development environment setup. 
-We do not yet use modules but will convert to them once they are more widely adopted. 
+This project is written in Go and the below workflow assumes you have a functional Go development environment setup that supports
+the use of Go modules.
 
  1. Clone this repo into `$GOPATH/src/github.com/zipcar/bosh-vault`
  1. Run `make` to see the available workflow commands.

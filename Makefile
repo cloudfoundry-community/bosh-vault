@@ -13,7 +13,7 @@ build: fmt ## Builds the binary
 	@go build -o bin/bosh-vault
 
 .PHONY: run
-run: build ## Builds and runs the binary using local-dev settings (requires running bosh-lite setup)
+run: bin/blite build ## Builds and runs the binary using local-dev settings (requires running bosh-lite setup)
 	./local-dev/tasks/run-local-binary
 
 .PHONY: fmt
