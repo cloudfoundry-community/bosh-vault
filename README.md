@@ -53,7 +53,9 @@ pass the uaa address: `BV_UAA_ADDRESS`
   - [Credhub Implementation Docs](http://credhub-api.cfapps.io/version/2.1/)
 
 # Architecture
-The Vault Cloudfoundry Config Server is meant to be run alongside Vault and proxy config server requests.
+The Vault Cloudfoundry Config Server is meant to be run alongside Vault and proxy config server requests. It could also be located 
+on the director as a job using the bosh-release but this has security implications as it would mean storing the token for the config 
+server on the director itself.
 
 ![high level architecture diagram](docs/diagrams/high-level-architecture.jpg)
 
