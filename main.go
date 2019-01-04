@@ -33,7 +33,7 @@ func main() {
 	logger.Log.Infof("Hello world. I am bosh-vault version %s", version.Version)
 	logger.Log.Debugf("Config: %+v", bvConfig)
 
-	vault.InitializeClient(bvConfig)
+	vault.Initialize(bvConfig)
 
 	server.ListenAndServe(bvConfig)
 }

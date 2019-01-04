@@ -41,9 +41,9 @@ func kvReadRequest(client *api.Client, path string, params map[string]string) (*
 	return api.ParseSecret(resp.Body)
 }
 
-func kvGetMetadata(client *api.Client, name string) (*api.Secret, error) {
-	metadataPath := parseMetaDataPath(name)
-	metadata, err := client.Logical().Read(metadataPath)
+func kvGetMetadata(vault *Vault, name string) (*api.Secret, error) {
+	metadataPath := vault.parseMetaDataPath(name)
+	metadata, err := vault.Client.Logical().Read(metadataPath)
 	if err != nil {
 		return nil, err
 	}

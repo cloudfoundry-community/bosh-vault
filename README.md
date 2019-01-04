@@ -33,6 +33,8 @@ vault:
   token: NO_DEFAULT
   timeout: 30 (How many seconds we should wait when contacting Vault before timing out)
   prefix: secret (The name of the KV mount in Vault)
+  ca: NO_DEFAULT (Path to the CA to trust when connecting to Vault)
+  skipverify: false (Whether or not to skip verifying TLS trust)
 tls:
   cert: NO_DEFAULT (Path to the cert used to secure the config server api)
   key: NO_DEFUAULT (Path to the key used to secure the config server api)
@@ -50,8 +52,10 @@ pass the uaa address: `BV_UAA_ADDRESS`
 
 # Additional Features: Redirect Pull Through Cache
 This implementation of config server supports a feature that is not in the API spec or CredHub implementation: redirects.
-The idea of this feature is to provide a way for config server to access "read-only" authoritative values for certain paths
-and ids. This is ideal for things like:
+The idea of this feature is to provide a way for config server to access "read-only" authoritative values for certain names
+when GET requests are made.
+
+This is ideal for things like:
 
   - shared certificates
   - shared API keys
@@ -59,26 +63,34 @@ and ids. This is ideal for things like:
 
 Ideally this allows operators to maintain a shared central Vault server and control access to any shared secrets using
 read only tokens. When a requested name or id matches a configured redirect rule bosh-vault will reach out to the
-alternate Vault and return the secret value. 
+alternate Vault and return the secret value. This improves and centralizes the audit trails for these shared secrets 
+in contrast to migrating them around by hand to every environment.
 
-Bosh Vault will also copy that value into the main configured "local" Vault server so that in the event the alternate Vault 
-server cannot be reached before the timeout a "stale" value can be used. In this way configured redirects also function 
-as a pull through cache.
+To protect against single point of failure issues Bosh Vault also copies the value into the main "local" Vault every time
+it is requested. This locally stored ("last known") value will be returned only if a connection to the redirect vault 
+server cannot be established within the configured timeout value. 
+
+Redirects are only evaluated for GET requests. PUT, POST, and DELETE requests never apply redirect logic and operate against
+the "local" Vault. Any changes applied "locally" to secrets with a configured redirect will be overwritten on the next 
+successful redirected GET request.
 
 Configure redirects with the following syntax:
 
 ```
 redirects:
-  - vault_addr: https://global-vault.yourdomain.biz
-    vault_token: A_VAULT_TOKEN_IDEALLY_READ_ONLY
-    timeout: 10
+  - vault:
+      address: NO_DEFAULT
+      token: NO_DEFAULT
+      timeout: 30 (How many seconds we should wait when contacting Vault before timing out)
+      prefix: secret (The name of the KV mount in Vault)
+      ca: NO_DEFAULT (Path to the CA to trust when connecting to Vault)
+      skipverify: false (Whether or not to skip verifying TLS trust)
     rules :
-    - name: /DIRECTOR_NAME/DEPLOYMENT_NAME/star_yourdomain_biz
+    - ref: /DIRECTOR_NAME/DEPLOYMENT_NAME/star_yourdomain_biz
       redirect: /global/certificate/star.yourdomain.biz
-    - name: /DIRECTOR_NAME/DEPLOYMENT_NAME/a_shared_credential
+    - ref: /DIRECTOR_NAME/DEPLOYMENT_NAME/a_shared_credential
       redirect: /global/password/a_shared_credential
-    - id: eyJuYW1lIjoiL0JMaXRlIEJvc2ggRGlyZWN0b3Ivbmdpbngvc29tZV9zc2hfa2V5IiwicGF0aCI6InNlY3JldC9kYXRhL0JMaXRlQm9zaERpcmVjdG9yL25naW54L3NvbWVfc3NoX2tleSIsInZlcnNpb24iOjF9
-      redirect: /global/keys/some_ssh_key   
+ 
 ```
 
 # Resources
