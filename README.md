@@ -48,6 +48,39 @@ uaa:
 These variables can also be passed on the environment by prefixing them with `BV` and using underscores. For example to 
 pass the uaa address: `BV_UAA_ADDRESS`
 
+# Additional Features: Redirect Pull Through Cache
+This implementation of config server supports a feature that is not in the API spec or CredHub implementation: redirects.
+The idea of this feature is to provide a way for config server to access "read-only" authoritative values for certain paths
+and ids. This is ideal for things like:
+
+  - shared certificates
+  - shared API keys
+  - shared credentials of any kind
+
+Ideally this allows operators to maintain a shared central Vault server and control access to any shared secrets using
+read only tokens. When a requested name or id matches a configured redirect rule bosh-vault will reach out to the
+alternate Vault and return the secret value. 
+
+Bosh Vault will also copy that value into the main configured "local" Vault server so that in the event the alternate Vault 
+server cannot be reached before the timeout a "stale" value can be used. In this way configured redirects also function 
+as a pull through cache.
+
+Configure redirects with the following syntax:
+
+```
+redirects:
+  - vault_addr: https://global-vault.yourdomain.biz
+    vault_token: A_VAULT_TOKEN_IDEALLY_READ_ONLY
+    timeout: 10
+    rules :
+    - name: /DIRECTOR_NAME/DEPLOYMENT_NAME/star_yourdomain_biz
+      redirect: /global/certificate/star.yourdomain.biz
+    - name: /DIRECTOR_NAME/DEPLOYMENT_NAME/a_shared_credential
+      redirect: /global/password/a_shared_credential
+    - id: eyJuYW1lIjoiL0JMaXRlIEJvc2ggRGlyZWN0b3Ivbmdpbngvc29tZV9zc2hfa2V5IiwicGF0aCI6InNlY3JldC9kYXRhL0JMaXRlQm9zaERpcmVjdG9yL25naW54L3NvbWVfc3NoX2tleSIsInZlcnNpb24iOjF9
+      redirect: /global/keys/some_ssh_key   
+```
+
 # Resources
   - [Config server api documentation](https://github.com/cloudfoundry/config-server/blob/master/docs/api.md)
   - [Credhub Implementation Docs](http://credhub-api.cfapps.io/version/2.1/)
