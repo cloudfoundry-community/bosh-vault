@@ -1,4 +1,4 @@
-package vault
+package store
 
 import (
 	"errors"
@@ -41,7 +41,7 @@ func kvReadRequest(client *api.Client, path string, params map[string]string) (*
 	return api.ParseSecret(resp.Body)
 }
 
-func kvGetMetadata(vault *Vault, name string) (*api.Secret, error) {
+func kvGetMetadata(vault *vault, name string) (*api.Secret, error) {
 	metadataPath := vault.parseMetaDataPath(name)
 	metadata, err := vault.Client.Logical().Read(metadataPath)
 	if err != nil {

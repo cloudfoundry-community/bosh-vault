@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/labstack/echo"
+	"github.com/zipcar/bosh-vault/store"
 	bvTypes "github.com/zipcar/bosh-vault/types"
-	"github.com/zipcar/bosh-vault/vault"
 	"io/ioutil"
 	"net/http"
 )
@@ -19,19 +19,19 @@ func dataGetByNameHandler(ctx echo.Context) error {
 		return errors.New("name query param not passed to data?name handler")
 	}
 	context.Log.Debugf("request to GET /v1/data?name=%s", name)
-	secretResponses, err := vault.GetAllByName(name)
+	secretResponses, err := store.GetAllByName(name)
 	if err != nil {
 		context.Log.Errorf("problem fetching secret by name: %s %s", name, err)
 		return err
 	}
 
-	responseData := make([]*vault.SecretResponse, 0)
+	responseData := make([]*store.SecretResponse, 0)
 	for _, secret := range secretResponses {
 		responseData = append(responseData, bvTypes.ParseSecretResponse(secret))
 	}
 
 	return ctx.JSON(http.StatusOK, struct {
-		Data []*vault.SecretResponse `json:"data"`
+		Data []*store.SecretResponse `json:"data"`
 	}{
 		Data: responseData,
 	})
@@ -46,7 +46,7 @@ func dataGetByIdHandler(ctx echo.Context) error {
 		return errors.New("id uri param not passed to data/:id handler")
 	}
 	context.Log.Debugf("request to /v1/data/%s", id)
-	vaultSecretResponse, err := vault.GetById(id)
+	vaultSecretResponse, err := store.GetById(id)
 	if err != nil {
 		context.Log.Errorf("problem fetching secret by id: %s %s", id, err)
 		return err
@@ -102,7 +102,7 @@ func dataDeleteHandler(ctx echo.Context) error {
 		return errors.New("name query param not passed to data?name handler")
 	}
 	context.Log.Debugf("request to DELETE /v1/data?name=%s", name)
-	err := vault.DeleteSecretByName(name)
+	err := store.DeleteByName(name)
 	if err != nil {
 		context.Log.Errorf("problem deleting secret by name: %s %s", name, err)
 		return err

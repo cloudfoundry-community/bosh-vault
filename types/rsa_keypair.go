@@ -8,7 +8,7 @@ import (
 	"encoding/pem"
 	"github.com/mitchellh/mapstructure"
 	"github.com/zipcar/bosh-vault/logger"
-	"github.com/zipcar/bosh-vault/vault"
+	"github.com/zipcar/bosh-vault/store"
 )
 
 const RsaKeypairType = "rsa"
@@ -21,7 +21,7 @@ type RsaKeypairRequest struct {
 
 func (record RsaKeypairRecord) Store(name string) (CredentialResponse, error) {
 	var resp RsaKeypairResponse
-	secretId, err := vault.StoreSecret(name, map[string]interface{}{
+	secretId, err := store.SetSecret(name, map[string]interface{}{
 		"public_key":  record.PublicKey,
 		"private_key": record.PrivateKey,
 		"type":        RsaKeypairType,
@@ -40,7 +40,7 @@ func (record RsaKeypairRecord) Store(name string) (CredentialResponse, error) {
 	return resp, nil
 }
 
-func ParseVaultDataAsRsaKeypair(rawVaultData *vault.SecretResponse) *vault.SecretResponse {
+func ParseVaultDataAsRsaKeypair(rawVaultData *store.SecretResponse) *store.SecretResponse {
 	var keypairResponse RsaKeypairRecord
 	err := mapstructure.Decode(rawVaultData.Value, &keypairResponse)
 	if err != nil {

@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"github.com/zipcar/bosh-vault/logger"
-	"github.com/zipcar/bosh-vault/vault"
+	"github.com/zipcar/bosh-vault/store"
 	"math/big"
 	"net"
 	"time"
@@ -80,7 +80,7 @@ func (r CertificateRequest) IsRegularCertificateRequest() bool {
 
 func (record CertificateRecord) Store(name string) (CredentialResponse, error) {
 	resp := CertificateResponse{}
-	id, err := vault.StoreSecret(name, map[string]interface{}{
+	id, err := store.SetSecret(name, map[string]interface{}{
 		"certificate": record.Certificate,
 		"ca":          record.Ca,
 		"private_key": record.PrivateKey,
@@ -99,7 +99,7 @@ func (record CertificateRecord) Store(name string) (CredentialResponse, error) {
 	return resp, nil
 }
 
-func ParseVaultDataAsCertificateRecord(rawVaultData *vault.SecretResponse) *vault.SecretResponse {
+func ParseVaultDataAsCertificateRecord(rawVaultData *store.SecretResponse) *store.SecretResponse {
 	var certResponse CertificateRecord
 	err := mapstructure.Decode(rawVaultData.Value, &certResponse)
 	if err != nil {
@@ -170,7 +170,7 @@ func getRootCaAndKeyByName(caName string) (*x509.Certificate, *rsa.PrivateKey, e
 	rootCaCert := &x509.Certificate{}
 	rootCaKey := &rsa.PrivateKey{}
 
-	rawCaResponse, err := vault.GetLatestByName(caName)
+	rawCaResponse, err := store.GetLatestByName(caName)
 	if err != nil {
 		return rootCaCert, rootCaKey, err
 	}

@@ -6,7 +6,7 @@ import (
 	"github.com/zipcar/bosh-vault/config"
 	"github.com/zipcar/bosh-vault/logger"
 	"github.com/zipcar/bosh-vault/server"
-	"github.com/zipcar/bosh-vault/vault"
+	"github.com/zipcar/bosh-vault/store"
 	"github.com/zipcar/bosh-vault/version"
 	"os"
 )
@@ -33,7 +33,7 @@ func main() {
 	logger.Log.Infof("Hello world. I am bosh-vault version %s", version.Version)
 	logger.Log.Debugf("Config: %+v", bvConfig)
 
-	vault.Initialize(bvConfig)
+	store.Initialize(bvConfig)
 
 	server.ListenAndServe(bvConfig)
 }

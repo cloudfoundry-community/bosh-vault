@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/zipcar/bosh-vault/vault"
+	"github.com/zipcar/bosh-vault/store"
 )
 
 type GenericCredentialGenerationRequest struct {
@@ -96,7 +96,7 @@ func ParseCredentialGenerationRequest(requestBody []byte) (CredentialGenerationR
 	return req, err
 }
 
-func ParseSecretResponse(vaultSecretResponse vault.SecretResponse) *vault.SecretResponse {
+func ParseSecretResponse(vaultSecretResponse store.SecretResponse) *store.SecretResponse {
 	var secretResp interface{}
 
 	secretType := vaultSecretResponse.Value.(map[string]interface{})["type"].(string)
@@ -111,5 +111,5 @@ func ParseSecretResponse(vaultSecretResponse vault.SecretResponse) *vault.Secret
 		secretResp = ParseVaultDataAsCertificateRecord(&vaultSecretResponse)
 	}
 
-	return secretResp.(*vault.SecretResponse)
+	return secretResp.(*store.SecretResponse)
 }

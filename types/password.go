@@ -2,7 +2,7 @@ package types
 
 import (
 	"github.com/sethvargo/go-password/password"
-	"github.com/zipcar/bosh-vault/vault"
+	"github.com/zipcar/bosh-vault/store"
 )
 
 const PasswordType = "password"
@@ -21,7 +21,7 @@ type PasswordRecord string
 
 func (record PasswordRecord) Store(name string) (CredentialResponse, error) {
 	var respObj PasswordResponse
-	id, err := vault.StoreSecret(name, map[string]interface{}{
+	id, err := store.SetSecret(name, map[string]interface{}{
 		"value": record,
 		"type":  PasswordType,
 	})
@@ -39,7 +39,7 @@ func (record PasswordRecord) Store(name string) (CredentialResponse, error) {
 	return respObj, nil
 }
 
-func ParseVaultDataAsPassword(vaultData *vault.SecretResponse) *vault.SecretResponse {
+func ParseVaultDataAsPassword(vaultData *store.SecretResponse) *store.SecretResponse {
 	vaultData.Value = vaultData.Value.(map[string]interface{})["value"].(string)
 	return vaultData
 }

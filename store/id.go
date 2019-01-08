@@ -1,4 +1,4 @@
-package vault
+package store
 
 // The config server API is meant to return an Id that can serve as an immutable reference to a specific version of a
 // secret. Vault's KV2 secret engine is able to understand secret versions that exist at a single path without UUIDs.

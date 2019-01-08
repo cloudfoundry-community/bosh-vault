@@ -7,7 +7,7 @@ import (
 	"encoding/pem"
 	"github.com/mitchellh/mapstructure"
 	"github.com/zipcar/bosh-vault/logger"
-	"github.com/zipcar/bosh-vault/vault"
+	"github.com/zipcar/bosh-vault/store"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -29,7 +29,7 @@ func (record SshKeypairRecord) ToVaultDataInterface() map[string]interface{} {
 
 func (record SshKeypairRecord) Store(name string) (CredentialResponse, error) {
 	var resp SshKeypairResponse
-	secretId, err := vault.StoreSecret(name, record.ToVaultDataInterface())
+	secretId, err := store.SetSecret(name, record.ToVaultDataInterface())
 	if err != nil {
 		return resp, err
 	}
@@ -43,7 +43,7 @@ func (record SshKeypairRecord) Store(name string) (CredentialResponse, error) {
 	return resp, nil
 }
 
-func ParseVaultDataAsSshKeypair(rawVaultData *vault.SecretResponse) *vault.SecretResponse {
+func ParseVaultDataAsSshKeypair(rawVaultData *store.SecretResponse) *store.SecretResponse {
 	var keypairResponse SshKeypairRecord
 	err := mapstructure.Decode(rawVaultData.Value, &keypairResponse)
 	if err != nil {
