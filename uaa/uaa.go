@@ -1,4 +1,4 @@
-package auth
+package uaa
 
 import (
 	"crypto/tls"
@@ -9,7 +9,6 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/zipcar/bosh-vault/config"
-	"github.com/zipcar/bosh-vault/health"
 	"github.com/zipcar/bosh-vault/logger"
 	"io/ioutil"
 	"log"
@@ -22,11 +21,15 @@ const UaaAuthScheme = "bearer" // uaa doesn't use "Bearer" (the JWT default), bu
 const UaaExpectedAudience = "config_server"
 const UaaSigningKeyRefreshInterval = 24 * time.Hour // get updated key information once a day
 
-type UaaClient struct {
+type Uaa struct {
 	Enabled        bool
 	Endpoints      *UaaEndpoints
 	httpClient     *http.Client
 	SigningKeyData TokenKeyResponse
+}
+
+type MiddlewareConfig struct {
+	Skipper middleware.Skipper
 }
 
 type UaaEndpoints struct {
@@ -45,7 +48,7 @@ type TokenKeyResponse struct {
 	E     string `json:"e"`
 }
 
-func GetUaaClient(bvConfig config.Configuration) *UaaClient {
+func GetUaa(bvConfig config.Configuration) *Uaa {
 
 	// Get the SystemCertPool, continue with an empty pool on error
 	rootCAs, _ := x509.SystemCertPool()
@@ -77,7 +80,7 @@ func GetUaaClient(bvConfig config.Configuration) *UaaClient {
 		Transport: customTransport,
 	}
 
-	client := &UaaClient{
+	client := &Uaa{
 		Enabled: bvConfig.Uaa.Enabled,
 		Endpoints: &UaaEndpoints{
 			CheckToken: fmt.Sprintf("%s/check_token", bvConfig.Uaa.Address),
@@ -86,22 +89,24 @@ func GetUaaClient(bvConfig config.Configuration) *UaaClient {
 		httpClient: customHttpClient,
 	}
 
-	// Update the key signing information for the UAA server once a day, this will cut down on traffic to the UAA server
-	ticker := time.NewTicker(UaaSigningKeyRefreshInterval)
-	go func() {
-		for _ = range ticker.C {
-			logger.Log.Debug("refreshing signing key info from UAA server")
-			err := client.updateSigningKeyData()
-			if err != nil {
-				logger.Log.Error("error getting signing key info from UAA server, perhaps it's down? continuing to use cached signing key data...")
+	if bvConfig.Uaa.Enabled {
+		// Update the key signing information for the UAA server once a day, this will cut down on traffic to the UAA server
+		ticker := time.NewTicker(UaaSigningKeyRefreshInterval)
+		go func() {
+			for _ = range ticker.C {
+				logger.Log.Debug("refreshing signing key info from UAA server")
+				err := client.updateSigningKeyData()
+				if err != nil {
+					logger.Log.Error("error getting signing key info from UAA server, perhaps it's down? continuing to use cached signing key data...")
+				}
 			}
-		}
-	}()
+		}()
+	}
 
 	return client
 }
 
-func (uaa *UaaClient) updateSigningKeyData() error {
+func (uaa *Uaa) updateSigningKeyData() error {
 	var signingKeyResp TokenKeyResponse
 
 	resp, err := uaa.httpClient.Get(uaa.Endpoints.TokenKey)
@@ -128,7 +133,7 @@ func (uaa *UaaClient) updateSigningKeyData() error {
 	return nil
 }
 
-func (uaa *UaaClient) AuthMiddleware() echo.MiddlewareFunc {
+func (uaa *Uaa) AuthMiddleware(config MiddlewareConfig) echo.MiddlewareFunc {
 
 	if uaa.SigningKeyData.Value == "" || uaa.SigningKeyData.Alg == "" {
 		err := uaa.updateSigningKeyData()
@@ -145,27 +150,25 @@ func (uaa *UaaClient) AuthMiddleware() echo.MiddlewareFunc {
 		SigningKey:    publicKey,
 		SigningMethod: uaa.SigningKeyData.Alg,
 		AuthScheme:    UaaAuthScheme,
-		Skipper: func(c echo.Context) bool {
-			return !uaa.Enabled || c.Request().RequestURI == health.HealthCheckUri
-		},
+		Skipper:       config.Skipper,
 		// JWT middleware handles basic validity checks, this successhandler is our custom audience check since UAA
 		// returns a []string for the aud claim so single users can access multiple resources, the consequence is we can't
 		// use the built in methods of the JWT middleware to validate the audience for us since we don't know what additional
 		// audiences a given user may have
-		SuccessHandler: uaa.validateUaaAudience,
+		SuccessHandler: uaa.validateAudience,
 	})
 }
 
-func (uaa *UaaClient) validateUaaAudience(ctx echo.Context) {
+func (uaa *Uaa) validateAudience(ctx echo.Context) {
 	user := ctx.Get("user").(*jwt.Token)
-	if !validateAudClaim(user.Claims.(jwt.MapClaims)["aud"].([]interface{})) {
+	if !uaa.validateAudClaim(user.Claims.(jwt.MapClaims)["aud"].([]interface{})) {
 		errorText := fmt.Sprintf("valid JWT received but missing %s audience claim, closing connection", UaaExpectedAudience)
 		logger.Log.Error(errorText)
 		ctx.Error(echo.NewHTTPError(http.StatusUnauthorized, errorText))
 	}
 }
 
-func validateAudClaim(claims []interface{}) bool {
+func (uaa *Uaa) validateAudClaim(claims []interface{}) bool {
 	for _, claim := range claims {
 		if strings.Contains(claim.(string), UaaExpectedAudience) {
 			return true

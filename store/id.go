@@ -17,7 +17,6 @@ import (
 
 type VersionedSecretMetaData struct {
 	Name    string      `json:"name"`
-	Path    string      `json:"path"`
 	Version json.Number `json:"version"`
 }
 

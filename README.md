@@ -18,6 +18,32 @@ the returned data more like Credhub's implementation (creation time, etc). The f
 
 There is a functional [Bosh release for this project](https://github.com/Zipcar/bosh-vault-release/releases).
 
+# Vault Configuration
+Bosh-vault requires a Vault server with a [kv2 mount](https://www.vaultproject.io/docs/secrets/kv/kv-v2.html) available.
+In order for bosh-vault to work with an existing Vault server it needs a token. That token should be attached to a 
+policy that looks something like this (assuming your KV2 mount was `config-server`):
+
+```
+path "config-server/data/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+path "config-server/metadata/*" {
+  capabilities = ["read"]
+}
+```
+
+```
+vault policy write config-server config-server.hcl
+```
+
+You'll also need to generate a token for the config server to use that is tied to this policy, we recommend using a 
+periodic token as bosh-vault will automatically refresh its token based on the renewal configuration property.
+
+```
+vault token create -format=json -period=168h -policy=config-server -display-name=bosh-vault-config-server
+```
+
 # Configuration
 The bosh-vault binary can be configured in a couple of ways: a configuration file or the environment. A configuration file
 can be passed using the flag: `-config` and passing a path to a JSON or YAML file of the form:
@@ -35,6 +61,7 @@ vault:
   prefix: secret (The name of the KV mount in Vault)
   ca: NO_DEFAULT (Path to the CA to trust when connecting to Vault)
   skipverify: false (Whether or not to skip verifying TLS trust)
+  renewinterval: 3600 (How many seconds we should wait before renewing our vault token)
 tls:
   cert: NO_DEFAULT (Path to the cert used to secure the config server api)
   key: NO_DEFUAULT (Path to the key used to secure the config server api)
@@ -85,6 +112,7 @@ redirects:
       prefix: secret (The name of the KV mount in Vault)
       ca: NO_DEFAULT (Path to the CA to trust when connecting to Vault)
       skipverify: false (Whether or not to skip verifying TLS trust)
+      renewinterval: 3600 (How many seconds we should wait before renewing our vault token)
     rules :
     - ref: /DIRECTOR_NAME/DEPLOYMENT_NAME/star_yourdomain_biz
       redirect: /global/certificate/star.yourdomain.biz
@@ -129,7 +157,6 @@ We were able to solve both of these issues by making our id's base64 encoded met
 ```
 {
   name: "/BLite Bosh Director/nginx/some_ssh_key",
-  path: "secret/data/BLiteBoshDirector/nginx/some_ssh_key",
   version: 1
 }
 ```
@@ -137,7 +164,7 @@ We were able to solve both of these issues by making our id's base64 encoded met
 would encode to:
 
 ```
-eyJuYW1lIjoiL0JMaXRlIEJvc2ggRGlyZWN0b3Ivbmdpbngvc29tZV9zc2hfa2V5IiwicGF0aCI6InNlY3JldC9kYXRhL0JMaXRlQm9zaERpcmVjdG9yL25naW54L3NvbWVfc3NoX2tleSIsInZlcnNpb24iOjF9
+ewogIG5hbWU6ICIvQkxpdGUgQm9zaCBEaXJlY3Rvci9uZ2lueC9zb21lX3NzaF9rZXkiLAogIHZlcnNpb246IDEKfQ==
 ```
 
 A long an incomprehensible id to be sure, but it is guaranteed to be:

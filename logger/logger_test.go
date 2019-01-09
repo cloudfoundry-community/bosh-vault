@@ -19,8 +19,8 @@ var _ = Describe("Logger", func() {
 				errorLevelStringMixed string
 			)
 			BeforeEach(func() {
-				bvConfig := config.GetConfig(nil)
-				InitializeLogger(bvConfig)
+				bvConfig := config.ParseConfig(nil)
+				Initialize(bvConfig)
 				errorLevelString = "error"
 				errorLevelStringCaps = "ERROR"
 				errorLevelStringMixed = "ErRoR"
@@ -28,14 +28,14 @@ var _ = Describe("Logger", func() {
 
 			It("correctly interprets the log level string error", func() {
 				bvConfig.Log.Level = errorLevelString
-				InitializeLogger(bvConfig)
+				Initialize(bvConfig)
 				Expect(Log.Level).To(Equal(logrus.ErrorLevel))
 				Expect(Log.Level).ToNot(Equal(logrus.DebugLevel))
 			})
 
 			It("correctly interprets the log level string ERROR", func() {
 				bvConfig.Log.Level = errorLevelStringCaps
-				InitializeLogger(bvConfig)
+				Initialize(bvConfig)
 				Expect(Log.Level).To(Equal(logrus.ErrorLevel))
 				Expect(Log.Level).ToNot(Equal(logrus.DebugLevel))
 
@@ -43,7 +43,7 @@ var _ = Describe("Logger", func() {
 
 			It("correctly interprets the log level string ErRoR", func() {
 				bvConfig.Log.Level = errorLevelStringMixed
-				InitializeLogger(bvConfig)
+				Initialize(bvConfig)
 				Expect(Log.Level).To(Equal(logrus.ErrorLevel))
 				Expect(Log.Level).ToNot(Equal(logrus.DebugLevel))
 			})
@@ -54,13 +54,13 @@ var _ = Describe("Logger", func() {
 				invalidLogLevel string
 			)
 			BeforeEach(func() {
-				bvConfig := config.GetConfig(nil)
-				InitializeLogger(bvConfig)
+				bvConfig := config.ParseConfig(nil)
+				Initialize(bvConfig)
 				invalidLogLevel = "waka"
 			})
 			It("rejects invalid logging level and defaults to DEBUG, since obviously this user needs help", func() {
 				bvConfig.Log.Level = invalidLogLevel
-				InitializeLogger(bvConfig)
+				Initialize(bvConfig)
 				Expect(Log.Level).To(Equal(logrus.DebugLevel))
 			})
 		})

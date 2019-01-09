@@ -7,7 +7,7 @@ import (
 	"encoding/pem"
 	"github.com/mitchellh/mapstructure"
 	"github.com/zipcar/bosh-vault/logger"
-	"github.com/zipcar/bosh-vault/store"
+	"github.com/zipcar/bosh-vault/secret"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -27,9 +27,9 @@ func (record SshKeypairRecord) ToVaultDataInterface() map[string]interface{} {
 	}
 }
 
-func (record SshKeypairRecord) Store(name string) (CredentialResponse, error) {
+func (record SshKeypairRecord) Store(secretStore secret.Store, name string) (CredentialResponse, error) {
 	var resp SshKeypairResponse
-	secretId, err := store.SetSecret(name, record.ToVaultDataInterface())
+	secretId, err := secretStore.Set(name, record.ToVaultDataInterface())
 	if err != nil {
 		return resp, err
 	}
@@ -43,7 +43,7 @@ func (record SshKeypairRecord) Store(name string) (CredentialResponse, error) {
 	return resp, nil
 }
 
-func ParseVaultDataAsSshKeypair(rawVaultData *store.SecretResponse) *store.SecretResponse {
+func ParseVaultDataAsSshKeypair(rawVaultData *secret.Secret) *secret.Secret {
 	var keypairResponse SshKeypairRecord
 	err := mapstructure.Decode(rawVaultData.Value, &keypairResponse)
 	if err != nil {
@@ -57,12 +57,11 @@ func (r *SshKeypairRequest) Validate() bool {
 	return r.Type == SshKeypairType
 }
 
-func (r *SshKeypairRequest) Generate() (CredentialResponse, error) {
-	var resp SshKeypairResponse
+func (r *SshKeypairRequest) Generate(secretStore secret.Store) (CredentialRecordInterface, error) {
 
 	privKey, err := rsa.GenerateKey(rand.Reader, RsaKeySizeBits)
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
 
 	pemPriv := pem.EncodeToMemory(&pem.Block{
@@ -83,11 +82,15 @@ func (r *SshKeypairRequest) Generate() (CredentialResponse, error) {
 		PublicKeyFingerprint: ssh.FingerprintLegacyMD5(pubKey),
 	}
 
-	return sshKeyPair.Store(r.Name)
+	return sshKeyPair, nil
 }
 
 func (r *SshKeypairRequest) CredentialType() string {
 	return r.Type
+}
+
+func (r *SshKeypairRequest) CredentialName() string {
+	return r.Name
 }
 
 type SshKeypairRecord struct {

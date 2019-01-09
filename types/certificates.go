@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"github.com/zipcar/bosh-vault/logger"
-	"github.com/zipcar/bosh-vault/store"
+	"github.com/zipcar/bosh-vault/secret"
 	"math/big"
 	"net"
 	"time"
@@ -51,6 +51,10 @@ func (r *CertificateRequest) CredentialType() string {
 	return r.Type
 }
 
+func (r *CertificateRequest) CredentialName() string {
+	return r.Name
+}
+
 func (r *CertificateRequest) Validate() bool {
 	return r.IsRootCaRequest() || r.IsIntermediateCaRequest() || r.IsRegularCertificateRequest()
 }
@@ -78,9 +82,9 @@ func (r CertificateRequest) IsRegularCertificateRequest() bool {
 		r.Parameters.CommonName != ""
 }
 
-func (record CertificateRecord) Store(name string) (CredentialResponse, error) {
+func (record CertificateRecord) Store(secretStore secret.Store, name string) (CredentialResponse, error) {
 	resp := CertificateResponse{}
-	id, err := store.SetSecret(name, map[string]interface{}{
+	id, err := secretStore.Set(name, map[string]interface{}{
 		"certificate": record.Certificate,
 		"ca":          record.Ca,
 		"private_key": record.PrivateKey,
@@ -99,7 +103,7 @@ func (record CertificateRecord) Store(name string) (CredentialResponse, error) {
 	return resp, nil
 }
 
-func ParseVaultDataAsCertificateRecord(rawVaultData *store.SecretResponse) *store.SecretResponse {
+func ParseVaultDataAsCertificateRecord(rawVaultData *secret.Secret) *secret.Secret {
 	var certResponse CertificateRecord
 	err := mapstructure.Decode(rawVaultData.Value, &certResponse)
 	if err != nil {
@@ -109,12 +113,22 @@ func ParseVaultDataAsCertificateRecord(rawVaultData *store.SecretResponse) *stor
 	return rawVaultData
 }
 
-func (r *CertificateRequest) Generate() (CredentialResponse, error) {
+func (r *CertificateRequest) Generate(secretStore secret.Store) (CredentialRecordInterface, error) {
+	var rootCaCert *x509.Certificate
+	var rootCaKey *rsa.PrivateKey
+	var err error
+
 	switch {
+	case r.IsRegularCertificateRequest() || r.IsIntermediateCaRequest():
+		rootCaCert, rootCaKey, err = getRootCaAndKeyByName(r.Parameters.Ca, secretStore)
+		if err != nil {
+			return nil, err
+		}
+		fallthrough
 	case r.IsRegularCertificateRequest():
-		return r.GenerateRegularCertificate()
+		return r.GenerateRegularCertificate(rootCaCert, rootCaKey)
 	case r.IsIntermediateCaRequest():
-		return r.GenerateIntermediateCertificate()
+		return r.GenerateIntermediateCertificate(rootCaCert, rootCaKey)
 	case r.IsRootCaRequest():
 		return r.GenerateRootCertificate()
 	default:
@@ -166,7 +180,7 @@ func newX509CertAndKey(cr *CertificateRequest) (x509.Certificate, *rsa.PrivateKe
 	return cert, privateKey, nil
 }
 
-func getRootCaAndKeyByName(caName string) (*x509.Certificate, *rsa.PrivateKey, error) {
+func getRootCaAndKeyByName(caName string, store secret.Store) (*x509.Certificate, *rsa.PrivateKey, error) {
 	rootCaCert := &x509.Certificate{}
 	rootCaKey := &rsa.PrivateKey{}
 
@@ -215,17 +229,11 @@ func assembleCertRecord(rawCaCert, rawCert, rawKey []byte) CertificateRecord {
 	}
 }
 
-func (r *CertificateRequest) GenerateRegularCertificate() (CredentialResponse, error) {
-	var resp CertificateResponse
+func (r *CertificateRequest) GenerateRegularCertificate(rootCaCert *x509.Certificate, rootCaKey *rsa.PrivateKey) (CredentialRecordInterface, error) {
 
 	certTemplate, privateKey, err := newX509CertAndKey(r)
 	if err != nil {
-		return resp, err
-	}
-
-	rootCaCert, rootCaKey, err := getRootCaAndKeyByName(r.Parameters.Ca)
-	if err != nil {
-		return resp, err
+		return nil, err
 	}
 
 	certTemplate.KeyUsage = x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature
@@ -258,18 +266,17 @@ func (r *CertificateRequest) GenerateRegularCertificate() (CredentialResponse, e
 
 	rawCert, err := x509.CreateCertificate(rand.Reader, &certTemplate, rootCaCert, &privateKey.PublicKey, rootCaKey)
 	if err != nil {
-		return resp, errors.New(fmt.Sprintf("problem generating the x509 CA cert: %s", err))
+		return nil, errors.New(fmt.Sprintf("problem generating the x509 CA cert: %s", err))
 	}
 
-	return assembleCertRecord(rootCaCert.Raw, rawCert, x509.MarshalPKCS1PrivateKey(privateKey)).Store(r.Name)
+	return assembleCertRecord(rootCaCert.Raw, rawCert, x509.MarshalPKCS1PrivateKey(privateKey)), nil
 }
 
-func (r *CertificateRequest) GenerateRootCertificate() (CredentialResponse, error) {
-	var resp CertificateResponse
+func (r *CertificateRequest) GenerateRootCertificate() (CredentialRecordInterface, error) {
 
 	certTemplate, privateKey, err := newX509CertAndKey(r)
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
 
 	certTemplate.KeyUsage = x509.KeyUsageCertSign | x509.KeyUsageCRLSign
@@ -278,23 +285,17 @@ func (r *CertificateRequest) GenerateRootCertificate() (CredentialResponse, erro
 
 	rawCert, err := x509.CreateCertificate(rand.Reader, &certTemplate, &certTemplate, &privateKey.PublicKey, privateKey)
 	if err != nil {
-		return resp, errors.New(fmt.Sprintf("problem generating the x509 CA cert: %s", err))
+		return nil, errors.New(fmt.Sprintf("problem generating the x509 CA cert: %s", err))
 	}
 
-	return assembleCertRecord(rawCert, rawCert, x509.MarshalPKCS1PrivateKey(privateKey)).Store(r.Name)
+	return assembleCertRecord(rawCert, rawCert, x509.MarshalPKCS1PrivateKey(privateKey)), nil
 }
 
-func (r *CertificateRequest) GenerateIntermediateCertificate() (CredentialResponse, error) {
-	var resp CertificateResponse
+func (r *CertificateRequest) GenerateIntermediateCertificate(rootCaCert *x509.Certificate, rootCaKey *rsa.PrivateKey) (CredentialRecordInterface, error) {
 
 	certTemplate, privateKey, err := newX509CertAndKey(r)
 	if err != nil {
-		return resp, err
-	}
-
-	rootCaCert, rootCaKey, err := getRootCaAndKeyByName(r.Parameters.Ca)
-	if err != nil {
-		return resp, err
+		return nil, err
 	}
 
 	certTemplate.KeyUsage = x509.KeyUsageCertSign | x509.KeyUsageCRLSign
@@ -302,8 +303,8 @@ func (r *CertificateRequest) GenerateIntermediateCertificate() (CredentialRespon
 
 	rawCert, err := x509.CreateCertificate(rand.Reader, &certTemplate, rootCaCert, &privateKey.PublicKey, rootCaKey)
 	if err != nil {
-		return resp, errors.New(fmt.Sprintf("problem generating the x509 CA cert: %s", err))
+		return nil, errors.New(fmt.Sprintf("problem generating the x509 CA cert: %s", err))
 	}
 
-	return assembleCertRecord(rootCaCert.Raw, rawCert, x509.MarshalPKCS1PrivateKey(privateKey)).Store(r.Name)
+	return assembleCertRecord(rootCaCert.Raw, rawCert, x509.MarshalPKCS1PrivateKey(privateKey)), nil
 }

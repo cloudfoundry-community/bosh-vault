@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	bvTypes "github.com/zipcar/bosh-vault/types"
+	"github.com/zipcar/bosh-vault/types"
 	fakes "github.com/zipcar/bosh-vault/types/typesfakes"
 )
 
@@ -12,7 +12,7 @@ var _ = Describe("Password", func() {
 	Describe("Password request validation", func() {
 		Context("a valid password post request", func() {
 			var (
-				PasswordRequest bvTypes.PasswordRequest
+				PasswordRequest types.PasswordRequest
 			)
 
 			BeforeEach(func() {
