@@ -142,9 +142,9 @@ func (v *Vault) sanitizeName(name string) string {
 }
 
 func (v *Vault) parseDataPath(name string) string {
-	return fmt.Sprintf("%s/data%s", v.Config.Prefix, v.sanitizeName(name))
+	return fmt.Sprintf("%s/data%s", v.Config.Mount, v.sanitizeName(name))
 }
 
 func (v *Vault) parseMetaDataPath(name string) string {
-	return fmt.Sprintf("%s/metadata%s", v.Config.Prefix, v.sanitizeName(name))
+	return fmt.Sprintf("%s/metadata%s", v.Config.Mount, v.sanitizeName(name))
 }

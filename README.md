@@ -58,7 +58,7 @@ vault:
   address: NO_DEFAULT
   token: NO_DEFAULT
   timeout: 30 (How many seconds we should wait when contacting Vault before timing out)
-  prefix: secret (The name of the KV mount in Vault)
+  mount: secret (The name of the KV mount in Vault)
   ca: NO_DEFAULT (Path to the CA to trust when connecting to Vault)
   skipverify: false (Whether or not to skip verifying TLS trust)
   renewinterval: 3600 (How many seconds we should wait before renewing our vault token)
@@ -109,7 +109,7 @@ redirects:
       address: NO_DEFAULT
       token: NO_DEFAULT
       timeout: 30 (How many seconds we should wait when contacting Vault before timing out)
-      prefix: secret (The name of the KV mount in Vault)
+      mount: secret (The name of the KV mount in Vault)
       ca: NO_DEFAULT (Path to the CA to trust when connecting to Vault)
       skipverify: false (Whether or not to skip verifying TLS trust)
       renewinterval: 3600 (How many seconds we should wait before renewing our vault token)

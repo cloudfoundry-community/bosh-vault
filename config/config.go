@@ -11,7 +11,7 @@ const DefaultLogLevel = "ERROR"
 const DefaultShutdownTimeoutSeconds = 30
 const DefaultUaaConnectionTimeoutSeconds = 10
 const DefaultVaultConnectionTimeoutSeconds = 30
-const DefaultVaultPrefix = "secret"
+const DefaultVaultMount = "secret"
 
 type Configuration struct {
 	Api struct {
@@ -41,7 +41,7 @@ type VaultConfiguration struct {
 	Address         string `json:"address" yaml:"address"`
 	Token           string `json:"token" yaml:"token"`
 	Timeout         int    `json:"timeout" yaml:"timeout"`
-	Prefix          string `json:"prefix" yaml:"prefix"`
+	Mount           string `json:"mount" yaml:"mount"`
 	Ca              string `json:"ca" yaml:"ca"`
 	SkipVerify      bool   `json:"skipverify" yaml:"skipverify"`
 	RenewalInterval int    `json:"renewalinterval" yaml:"renewalinterval"`
@@ -65,7 +65,7 @@ func ParseConfig(configFilePath *string) Configuration {
 	bvConfig.Uaa.Enabled = true
 	bvConfig.Uaa.Timeout = DefaultUaaConnectionTimeoutSeconds
 	bvConfig.Vault.Timeout = DefaultVaultConnectionTimeoutSeconds
-	bvConfig.Vault.Prefix = DefaultVaultPrefix
+	bvConfig.Vault.Mount = DefaultVaultMount
 
 	if configFilePath == nil || *configFilePath == "" {
 		return bvConfig
