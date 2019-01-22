@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	bvTypes "github.com/zipcar/bosh-vault/types"
+	"github.com/zipcar/bosh-vault/types"
 	fakes "github.com/zipcar/bosh-vault/types/typesfakes"
 )
 
@@ -12,7 +12,7 @@ var _ = Describe("SSH", func() {
 	Describe("SSH keypair request validation", func() {
 		Context("a valid ssh post request", func() {
 			var (
-				SshRequest bvTypes.SshKeypairRequest
+				SshRequest types.SshKeypairRequest
 			)
 
 			BeforeEach(func() {

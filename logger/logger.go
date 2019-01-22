@@ -8,7 +8,7 @@ import (
 
 var Log *logrus.Logger
 
-func InitializeLogger(bvConfig config.Configuration) {
+func Initialize(bvConfig config.Configuration) {
 	Log = logrus.New()
 	Log.SetFormatter(&logrus.JSONFormatter{})
 	logLevel, err := logrus.ParseLevel(bvConfig.Log.Level)

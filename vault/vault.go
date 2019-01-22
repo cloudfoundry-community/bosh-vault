@@ -1,151 +1,150 @@
 package vault
 
 import (
-	"encoding/json"
+	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/vault/api"
 	"github.com/zipcar/bosh-vault/config"
 	"github.com/zipcar/bosh-vault/logger"
+	"io/ioutil"
+	"net/http"
 	"strings"
 	"time"
 )
 
-type SecretResponse struct {
-	Name  string      `json:"name"`
-	Value interface{} `json:"value"`
-	Id    string      `json:"id"`
-}
+const DefaultVaultRenewalIntervalSeconds = 3600
 
-var Client *api.Client
+func GetVault(vaultConfig config.VaultConfiguration) (Vault, error) {
+	var vault Vault
 
-func InitializeClient(bvConfig config.Configuration) {
-	var err error
-	Client, err = api.NewClient(&api.Config{
-		Address: bvConfig.Vault.Address,
-	})
-	if err != nil {
-		logger.Log.Fatalf("could not communicate with Vault server at %s, %s", bvConfig.Vault.Address, err)
-	}
-	Client.SetToken(bvConfig.Vault.Token)
-	Client.SetClientTimeout(time.Duration(bvConfig.Vault.Timeout) * time.Second)
-}
-
-func GetLatestByName(name string) (SecretResponse, error) {
-	fullPath := parseDataPath(name)
-	secretRequest := VersionedSecretMetaData{
-		Name:    name,
-		Path:    fullPath,
-		Version: json.Number("0"),
-	}
-	id, _ := EncodeId(secretRequest)
-	return GetById(id)
-}
-
-func GetAllByName(name string) ([]SecretResponse, error) {
-	fullPath := parseDataPath(name)
-	secretVersions := make([]SecretResponse, 0)
-
-	metadata, err := kvGetMetadata(Client, name)
-	if err != nil {
-		return secretVersions, err
+	if vaultConfig.RenewalInterval == 0 {
+		vaultConfig.RenewalInterval = DefaultVaultRenewalIntervalSeconds
 	}
 
-	versionsRaw, ok := metadata.Data["versions"]
-	if !ok || versionsRaw == nil {
-		return secretVersions, errors.New(fmt.Sprintf("Could not get version information for %s", name))
+	vault.Config = vaultConfig
+	// Get the SystemCertPool, continue with an empty pool on error
+	rootCAs, _ := x509.SystemCertPool()
+	if rootCAs == nil {
+		logger.Log.Error("problem reading system , cert pool, if no UAA CA cert was passed in the config expect TLS errors")
+		rootCAs = x509.NewCertPool()
 	}
 
-	versionCount := len(versionsRaw.(map[string]interface{}))
-
-	for i := versionCount; i > 0; i-- {
-		secretRequest := VersionedSecretMetaData{
-			Name:    name,
-			Path:    fullPath,
-			Version: json.Number(fmt.Sprintf("%d", i)),
-		}
-		id, _ := EncodeId(secretRequest)
-		secretResp, err := GetById(id)
+	if vaultConfig.Ca != "" {
+		certs, err := ioutil.ReadFile(vaultConfig.Ca)
 		if err != nil {
-			logger.Log.Errorf("Problem fetching secret: %+v", secretRequest)
-		} else {
-			secretVersions = append(secretVersions, secretResp)
+			logger.Log.Fatalf("Failed to append %q to RootCAs: %v", vaultConfig.Ca, err)
+		}
+
+		if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
+			logger.Log.Debug("No certs appended, using system certs only")
 		}
 	}
 
-	return secretVersions, err
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: vaultConfig.SkipVerify,
+		RootCAs:            rootCAs,
+	}
+
+	// Setup a custom transport that trusts our UAA Ca as well as the system's trusted certs
+	customTransport := &http.Transport{TLSClientConfig: tlsConfig}
+	customHttpClient := &http.Client{
+		Timeout:   time.Second * time.Duration(vaultConfig.Timeout),
+		Transport: customTransport,
+	}
+
+	// Don't need to pass a timeout value in this config since it's a shortcut for setting the HTTP client one (above)
+	clientInstance, err := api.NewClient(&api.Config{
+		Address:    vaultConfig.Address,
+		HttpClient: customHttpClient,
+	})
+
+	if err != nil {
+		logger.Log.Debugf("could not communicate with Vault server at %s, %s", vaultConfig.Address, err)
+		return vault, err
+	}
+
+	clientInstance.SetToken(vaultConfig.Token)
+	clientInstance.SetClientTimeout(time.Duration(vaultConfig.Timeout) * time.Second)
+
+	vault.Client = clientInstance
+
+	ticker := time.NewTicker(time.Duration(vaultConfig.RenewalInterval) * time.Second)
+	go func() {
+		for _ = range ticker.C {
+			_, err := vault.Client.Auth().Token().RenewSelf(vaultConfig.RenewalInterval)
+			if err != nil {
+				logger.Log.Errorf("Problem renewing token for %s, will try again in %d seconds", vaultConfig.Address, vaultConfig.RenewalInterval)
+			}
+		}
+	}()
+	return vault, nil
 }
 
-func GetById(id string) (SecretResponse, error) {
-	var response SecretResponse
-	decodedId, err := DecodeId(id)
-	if err != nil {
-		return response, err
-	}
-
-	versionParam := map[string]string{
-		"version": fmt.Sprintf("%s", decodedId.Version),
-	}
-
-	secret, err := kvReadRequest(Client, decodedId.Path, versionParam)
-	if err != nil {
-		return response, err
-	}
-
-	response = SecretResponse{
-		Id:    id,
-		Value: secret.Data["data"],
-		Name:  decodedId.Name,
-	}
-
-	return response, nil
+type Vault struct {
+	Client *api.Client
+	Config config.VaultConfiguration
 }
 
-func DeleteSecretByName(name string) error {
-	_, err := Client.Logical().Delete(parseDataPath(name))
+func (v *Vault) Get(name string, params map[string]string) (map[string]interface{}, error) {
+	path := v.parseDataPath(name)
+	vaultReply, err := kvReadRequest(v.Client, path, params)
 	if err != nil {
-		logger.Log.Error(err)
+		return nil, err
 	}
-	return nil
+
+	return vaultReply.Data, nil
 }
 
-func StoreSecret(name string, value interface{}) (string, error) {
-	secretValue := map[string]interface{}{
+func (v *Vault) Delete(name string) error {
+	_, err := v.Client.Logical().Delete(v.parseDataPath(name))
+	return err
+}
+
+func (v *Vault) GetMetadata(name string) (map[string]interface{}, error) {
+	metadataPath := v.parseMetaDataPath(name)
+	metadata, err := v.Client.Logical().Read(metadataPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if metadata == nil {
+		return nil, errors.New(fmt.Sprintf("no metadata available for %s", name))
+	}
+
+	return metadata.Data, nil
+}
+
+func (v *Vault) Set(name string, value interface{}) (map[string]interface{}, error) {
+	path := v.parseDataPath(name)
+	response, err := v.Client.Logical().Write(path, map[string]interface{}{
 		"data":    value,
 		"options": map[string]interface{}{},
-	}
-	path := parseDataPath(name)
-	secret, err := Client.Logical().Write(path, secretValue)
+	})
 	if err != nil {
-		logger.Log.Error(err)
-		return "", err
+		return nil, err
 	}
-	version, ok := secret.Data["version"].(json.Number)
-	if !ok {
-		logger.Log.Errorf("couldn't fetch secret version from data: %+v", secret.Data)
-	}
-	secretRecord := VersionedSecretMetaData{
-		Version: version,
-		Path:    path,
-		Name:    name,
-	}
-	id, err := EncodeId(secretRecord)
-	if err != nil {
-		logger.Log.Error(err)
-		return "", err
-	}
-	return id, nil
+	return response.Data, nil
 }
 
-func NameToPath(name string) string {
-	// todo: spaces are a problem for the network path but full url encoding is a problem for Vault... see if there are other characters and solve this encoding issue
+func (v *Vault) Healthy() bool {
+	healthResponse, err := v.Client.Sys().Health()
+	if err != nil {
+		logger.Log.Errorf("problem checking health of vault %s: %s", v.Config.Address, err)
+	}
+	return healthResponse.Initialized && !healthResponse.Sealed
+}
+
+func (v *Vault) sanitizeName(name string) string {
+	// todo: no spaces allowed, anything else that should be here?
 	return strings.Replace(name, " ", "", -1)
 }
 
-func parseDataPath(name string) string {
-	return fmt.Sprintf("secret/data%s", NameToPath(name))
+func (v *Vault) parseDataPath(name string) string {
+	return fmt.Sprintf("%s/data%s", v.Config.Prefix, v.sanitizeName(name))
 }
 
-func parseMetaDataPath(name string) string {
-	return fmt.Sprintf("secret/metadata%s", NameToPath(name))
+func (v *Vault) parseMetaDataPath(name string) string {
+	return fmt.Sprintf("%s/metadata%s", v.Config.Prefix, v.sanitizeName(name))
 }

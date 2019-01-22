@@ -18,6 +18,32 @@ the returned data more like Credhub's implementation (creation time, etc). The f
 
 There is a functional [Bosh release for this project](https://github.com/Zipcar/bosh-vault-release/releases).
 
+# Vault Configuration
+Bosh-vault requires a Vault server with a [kv2 mount](https://www.vaultproject.io/docs/secrets/kv/kv-v2.html) available.
+In order for bosh-vault to work with an existing Vault server it needs a token. That token should be attached to a 
+policy that looks something like this (assuming your KV2 mount was `config-server`):
+
+```
+path "config-server/data/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+path "config-server/metadata/*" {
+  capabilities = ["read"]
+}
+```
+
+```
+vault policy write config-server config-server.hcl
+```
+
+You'll also need to generate a token for the config server to use that is tied to this policy, we recommend using a 
+periodic token as bosh-vault will automatically refresh its token based on the renewal configuration property.
+
+```
+vault token create -format=json -period=168h -policy=config-server -display-name=bosh-vault-config-server
+```
+
 # Configuration
 The bosh-vault binary can be configured in a couple of ways: a configuration file or the environment. A configuration file
 can be passed using the flag: `-config` and passing a path to a JSON or YAML file of the form:
@@ -33,6 +59,9 @@ vault:
   token: NO_DEFAULT
   timeout: 30 (How many seconds we should wait when contacting Vault before timing out)
   prefix: secret (The name of the KV mount in Vault)
+  ca: NO_DEFAULT (Path to the CA to trust when connecting to Vault)
+  skipverify: false (Whether or not to skip verifying TLS trust)
+  renewinterval: 3600 (How many seconds we should wait before renewing our vault token)
 tls:
   cert: NO_DEFAULT (Path to the cert used to secure the config server api)
   key: NO_DEFUAULT (Path to the key used to secure the config server api)
@@ -47,6 +76,50 @@ uaa:
 
 These variables can also be passed on the environment by prefixing them with `BV` and using underscores. For example to 
 pass the uaa address: `BV_UAA_ADDRESS`
+
+# Additional Features: Redirect Pull Through Cache
+This implementation of config server supports a feature that is not in the API spec or CredHub implementation: redirects.
+The idea of this feature is to provide a way for config server to access "read-only" authoritative values for certain names
+when GET requests are made.
+
+This is ideal for things like:
+
+  - shared certificates
+  - shared API keys
+  - shared credentials of any kind
+
+Ideally this allows operators to maintain a shared central Vault server and control access to any shared secrets using
+read only tokens. When a requested name or id matches a configured redirect rule bosh-vault will reach out to the
+alternate Vault and return the secret value. This improves and centralizes the audit trails for these shared secrets 
+in contrast to migrating them around by hand to every environment.
+
+To protect against single point of failure issues Bosh Vault also copies the value into the main "local" Vault every time
+it is requested. This locally stored ("last known") value will be returned only if a connection to the redirect vault 
+server cannot be established within the configured timeout value. 
+
+Redirects are only evaluated for GET requests. PUT, POST, and DELETE requests never apply redirect logic and operate against
+the "local" Vault. Any changes applied "locally" to secrets with a configured redirect will be overwritten on the next 
+successful redirected GET request.
+
+Configure redirects with the following syntax:
+
+```
+redirects:
+  - vault:
+      address: NO_DEFAULT
+      token: NO_DEFAULT
+      timeout: 30 (How many seconds we should wait when contacting Vault before timing out)
+      prefix: secret (The name of the KV mount in Vault)
+      ca: NO_DEFAULT (Path to the CA to trust when connecting to Vault)
+      skipverify: false (Whether or not to skip verifying TLS trust)
+      renewinterval: 3600 (How many seconds we should wait before renewing our vault token)
+    rules :
+    - ref: /DIRECTOR_NAME/DEPLOYMENT_NAME/star_yourdomain_biz
+      redirect: /global/certificate/star.yourdomain.biz
+    - ref: /DIRECTOR_NAME/DEPLOYMENT_NAME/a_shared_credential
+      redirect: /global/password/a_shared_credential
+ 
+```
 
 # Resources
   - [Config server api documentation](https://github.com/cloudfoundry/config-server/blob/master/docs/api.md)
@@ -84,7 +157,6 @@ We were able to solve both of these issues by making our id's base64 encoded met
 ```
 {
   name: "/BLite Bosh Director/nginx/some_ssh_key",
-  path: "secret/data/BLiteBoshDirector/nginx/some_ssh_key",
   version: 1
 }
 ```
@@ -92,7 +164,7 @@ We were able to solve both of these issues by making our id's base64 encoded met
 would encode to:
 
 ```
-eyJuYW1lIjoiL0JMaXRlIEJvc2ggRGlyZWN0b3Ivbmdpbngvc29tZV9zc2hfa2V5IiwicGF0aCI6InNlY3JldC9kYXRhL0JMaXRlQm9zaERpcmVjdG9yL25naW54L3NvbWVfc3NoX2tleSIsInZlcnNpb24iOjF9
+ewogIG5hbWU6ICIvQkxpdGUgQm9zaCBEaXJlY3Rvci9uZ2lueC9zb21lX3NzaF9rZXkiLAogIHZlcnNpb246IDEKfQ==
 ```
 
 A long an incomprehensible id to be sure, but it is guaranteed to be:

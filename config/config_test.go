@@ -22,13 +22,13 @@ var _ = Describe("Config", func() {
 				yamlConfigPath = filepath.Join(workingDirectory, "configfakes/listen-log-config.yml")
 			})
 			It("can read a JSON config correctly", func() {
-				bvConfig := config.GetConfig(&jsonConfigPath)
+				bvConfig := config.ParseConfig(&jsonConfigPath)
 				Expect(bvConfig.Api.Address).To(Equal("localhost:8000"))
 				Expect(bvConfig.Log.Level).To(Equal("ERROR"))
 				Expect(bvConfig.Api.DrainTimeout).To(Equal(10))
 			})
 			It("can read a YML config correctly", func() {
-				bvConfig := config.GetConfig(&yamlConfigPath)
+				bvConfig := config.ParseConfig(&yamlConfigPath)
 				Expect(bvConfig.Api.Address).To(Equal("localhost:8001"))
 				Expect(bvConfig.Log.Level).To(Equal("ERROR"))
 				Expect(bvConfig.Api.DrainTimeout).To(Equal(10))
@@ -45,12 +45,12 @@ var _ = Describe("Config", func() {
 				yamlConfigPath = filepath.Join(workingDirectory, "configfakes/listen-no-log-config.yml")
 			})
 			It("can read a JSON config correctly", func() {
-				bvConfig := config.GetConfig(&jsonConfigPath)
+				bvConfig := config.ParseConfig(&jsonConfigPath)
 				Expect(bvConfig.Api.Address).To(Equal("localhost:2000"))
 				Expect(bvConfig.Log.Level).To(Equal(config.DefaultLogLevel))
 			})
 			It("can read a YML config correctly", func() {
-				bvConfig := config.GetConfig(&yamlConfigPath)
+				bvConfig := config.ParseConfig(&yamlConfigPath)
 				Expect(bvConfig.Api.Address).To(Equal("localhost:2001"))
 				Expect(bvConfig.Log.Level).To(Equal(config.DefaultLogLevel))
 			})
@@ -66,19 +66,19 @@ var _ = Describe("Config", func() {
 				yamlConfigPath = filepath.Join(workingDirectory, "configfakes/log-no-listen-config.yml")
 			})
 			It("can read a JSON config correctly", func() {
-				bvConfig := config.GetConfig(&jsonConfigPath)
+				bvConfig := config.ParseConfig(&jsonConfigPath)
 				Expect(bvConfig.Api.Address).To(Equal(config.DefaultApiListenAddress))
 				Expect(bvConfig.Log.Level).To(Equal("ERROR"))
 			})
 			It("can read a YML config correctly", func() {
-				bvConfig := config.GetConfig(&yamlConfigPath)
+				bvConfig := config.ParseConfig(&yamlConfigPath)
 				Expect(bvConfig.Api.Address).To(Equal(config.DefaultApiListenAddress))
 				Expect(bvConfig.Log.Level).To(Equal("ERROR"))
 			})
 		})
 		Context("no config file specified", func() {
 			It("correctly returns defaults", func() {
-				bvConfig := config.GetConfig(nil)
+				bvConfig := config.ParseConfig(nil)
 				Expect(bvConfig.Api.Address).To(Equal(config.DefaultApiListenAddress))
 				Expect(bvConfig.Log.Level).To(Equal(config.DefaultLogLevel))
 			})
@@ -91,7 +91,7 @@ var _ = Describe("Config", func() {
 				fakeConfigPath = "/waka/waka/waka.json"
 			})
 			It("correctly returns defaults", func() {
-				bvConfig := config.GetConfig(&fakeConfigPath)
+				bvConfig := config.ParseConfig(&fakeConfigPath)
 				Expect(bvConfig.Api.Address).To(Equal(config.DefaultApiListenAddress))
 				Expect(bvConfig.Log.Level).To(Equal(config.DefaultLogLevel))
 			})

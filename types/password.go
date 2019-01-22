@@ -2,14 +2,14 @@ package types
 
 import (
 	"github.com/sethvargo/go-password/password"
-	"github.com/zipcar/bosh-vault/vault"
+	"github.com/zipcar/bosh-vault/secret"
 )
 
 const PasswordType = "password"
 const PasswordDefaultLength = 40
 const PasswordDefaultSymbols = 0
 const PasswordDefaultNumbers = 10
-const PasswordDefaultNoUppercase = true
+const PasswordDefaultNoUppercase = false
 const PasswordDefaultAllowRepeat = true
 
 type PasswordRequest struct {
@@ -19,9 +19,9 @@ type PasswordRequest struct {
 
 type PasswordRecord string
 
-func (record PasswordRecord) Store(name string) (CredentialResponse, error) {
+func (record PasswordRecord) Store(secretStore secret.Store, name string) (CredentialResponse, error) {
 	var respObj PasswordResponse
-	id, err := vault.StoreSecret(name, map[string]interface{}{
+	id, err := secretStore.Set(name, map[string]interface{}{
 		"value": record,
 		"type":  PasswordType,
 	})
@@ -39,7 +39,7 @@ func (record PasswordRecord) Store(name string) (CredentialResponse, error) {
 	return respObj, nil
 }
 
-func ParseVaultDataAsPassword(vaultData *vault.SecretResponse) *vault.SecretResponse {
+func ParseVaultDataAsPassword(vaultData *secret.Secret) *secret.Secret {
 	vaultData.Value = vaultData.Value.(map[string]interface{})["value"].(string)
 	return vaultData
 }
@@ -48,19 +48,22 @@ func (r *PasswordRequest) Validate() bool {
 	return r.Type == PasswordType
 }
 
-func (r *PasswordRequest) Generate() (CredentialResponse, error) {
-	var respObj PasswordResponse
+func (r *PasswordRequest) Generate(secretStore secret.Store) (CredentialRecordInterface, error) {
 	//todo: accept options and pass them through
 	passValue, err := password.Generate(PasswordDefaultLength, PasswordDefaultNumbers, PasswordDefaultSymbols, PasswordDefaultNoUppercase, PasswordDefaultAllowRepeat)
 	if err != nil {
-		return respObj, err
+		return nil, err
 	}
 
-	return PasswordRecord(passValue).Store(r.Name)
+	return PasswordRecord(passValue), nil
 }
 
 func (r *PasswordRequest) CredentialType() string {
 	return r.Type
+}
+
+func (r *PasswordRequest) CredentialName() string {
+	return r.Name
 }
 
 type PasswordResponse struct {

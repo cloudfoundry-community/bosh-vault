@@ -6,7 +6,6 @@ import (
 	"github.com/zipcar/bosh-vault/config"
 	"github.com/zipcar/bosh-vault/logger"
 	"github.com/zipcar/bosh-vault/server"
-	"github.com/zipcar/bosh-vault/vault"
 	"github.com/zipcar/bosh-vault/version"
 	"os"
 )
@@ -21,19 +20,17 @@ func main() {
 		return
 	}
 
-	// If config flag wasn't passed check the environment too, if this is empty too GetConfig can deal with it (use defaults)
+	// If config flag wasn't passed check the environment too, if this is empty too ParseConfig can deal with it (use defaults)
 	if *configPath == "" {
 		configFilePathEnvValue := os.Getenv("BV_CONFIG")
 		configPath = &configFilePathEnvValue
 	}
 
-	bvConfig := config.GetConfig(configPath)
+	bvConfig := config.ParseConfig(configPath)
 
-	logger.InitializeLogger(bvConfig)
+	logger.Initialize(bvConfig)
 	logger.Log.Infof("Hello world. I am bosh-vault version %s", version.Version)
 	logger.Log.Debugf("Config: %+v", bvConfig)
-
-	vault.InitializeClient(bvConfig)
 
 	server.ListenAndServe(bvConfig)
 }

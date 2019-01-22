@@ -8,7 +8,7 @@ import (
 	"encoding/pem"
 	"github.com/mitchellh/mapstructure"
 	"github.com/zipcar/bosh-vault/logger"
-	"github.com/zipcar/bosh-vault/vault"
+	"github.com/zipcar/bosh-vault/secret"
 )
 
 const RsaKeypairType = "rsa"
@@ -19,9 +19,9 @@ type RsaKeypairRequest struct {
 	Type string `json:"type"`
 }
 
-func (record RsaKeypairRecord) Store(name string) (CredentialResponse, error) {
+func (record RsaKeypairRecord) Store(secretStore secret.Store, name string) (CredentialResponse, error) {
 	var resp RsaKeypairResponse
-	secretId, err := vault.StoreSecret(name, map[string]interface{}{
+	secretId, err := secretStore.Set(name, map[string]interface{}{
 		"public_key":  record.PublicKey,
 		"private_key": record.PrivateKey,
 		"type":        RsaKeypairType,
@@ -40,7 +40,7 @@ func (record RsaKeypairRecord) Store(name string) (CredentialResponse, error) {
 	return resp, nil
 }
 
-func ParseVaultDataAsRsaKeypair(rawVaultData *vault.SecretResponse) *vault.SecretResponse {
+func ParseVaultDataAsRsaKeypair(rawVaultData *secret.Secret) *secret.Secret {
 	var keypairResponse RsaKeypairRecord
 	err := mapstructure.Decode(rawVaultData.Value, &keypairResponse)
 	if err != nil {
@@ -54,12 +54,10 @@ func (r *RsaKeypairRequest) Validate() bool {
 	return r.Type == RsaKeypairType
 }
 
-func (r *RsaKeypairRequest) Generate() (CredentialResponse, error) {
-	var resp RsaKeypairResponse
-
+func (r *RsaKeypairRequest) Generate(secretStore secret.Store) (CredentialRecordInterface, error) {
 	privKey, err := rsa.GenerateKey(rand.Reader, RsaKeySizeBits)
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
 
 	pemPriv := pem.EncodeToMemory(&pem.Block{
@@ -69,7 +67,7 @@ func (r *RsaKeypairRequest) Generate() (CredentialResponse, error) {
 
 	pubKeyBytes, err := asn1.Marshal(privKey.PublicKey)
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
 	pemPublic := pem.EncodeToMemory(&pem.Block{
 		Type:  "PUBLIC KEY",
@@ -81,11 +79,15 @@ func (r *RsaKeypairRequest) Generate() (CredentialResponse, error) {
 		PrivateKey: string(pemPriv),
 	}
 
-	return rsaKeyPair.Store(r.Name)
+	return rsaKeyPair, nil
 }
 
 func (r *RsaKeypairRequest) CredentialType() string {
 	return r.Type
+}
+
+func (r *RsaKeypairRequest) CredentialName() string {
+	return r.Name
 }
 
 type RsaKeypairRecord struct {

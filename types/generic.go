@@ -4,9 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/zipcar/bosh-vault/vault"
+	"github.com/zipcar/bosh-vault/secret"
 )
 
+// @see: https://golang.org/pkg/encoding/json/#RawMessage
+// Keeping generic parameters as RawMessages allows us to delay unmarhsaling the largest part of this struct until we've
+// determined what type of credential we're dealing with. This allows us to efficiently determine credential type
+// without needing to use expensive reflection operations.
 type GenericCredentialGenerationRequest struct {
 	Name       string          `json:"name"`
 	Type       string          `json:"type"`
@@ -28,13 +32,14 @@ type CredentialSetRequest struct {
 type CredentialResponse interface{}
 
 type CredentialRecordInterface interface {
-	Store(name string) (CredentialResponse, error)
+	Store(secretStore secret.Store, name string) (CredentialResponse, error)
 }
 
 type CredentialGenerationRequest interface {
-	Generate() (CredentialResponse, error)
+	Generate(secretStore secret.Store) (CredentialRecordInterface, error)
 	Validate() bool
 	CredentialType() string
+	CredentialName() string
 }
 
 func ParseCredentialSetRequest(requestBody []byte) (CredentialSetRequest, error) {
@@ -96,7 +101,7 @@ func ParseCredentialGenerationRequest(requestBody []byte) (CredentialGenerationR
 	return req, err
 }
 
-func ParseSecretResponse(vaultSecretResponse vault.SecretResponse) *vault.SecretResponse {
+func ParseSecretResponse(vaultSecretResponse secret.Secret) *secret.Secret {
 	var secretResp interface{}
 
 	secretType := vaultSecretResponse.Value.(map[string]interface{})["type"].(string)
@@ -111,5 +116,5 @@ func ParseSecretResponse(vaultSecretResponse vault.SecretResponse) *vault.Secret
 		secretResp = ParseVaultDataAsCertificateRecord(&vaultSecretResponse)
 	}
 
-	return secretResp.(*vault.SecretResponse)
+	return secretResp.(*secret.Secret)
 }
