@@ -2,6 +2,7 @@ package store
 
 import (
 	"encoding/json"
+	"github.com/zipcar/bosh-vault/logger"
 	"github.com/zipcar/bosh-vault/secret"
 	"github.com/zipcar/bosh-vault/vault"
 )
@@ -68,6 +69,14 @@ func (vrs *VaultRedirectStore) GetLatestByName(name string) (secret.Secret, erro
 		return s, err
 	}
 
+	// Persist to the default vault if redirected
+	if redirected {
+		_, err := setSecret(&vrs.DefaultVault, originalName, s.Value)
+		if err != nil {
+			logger.Log.Errorf("Unable to cache redirected secret %s in the default Vault", originalName)
+		}
+	}
+
 	return vrs.normalizeSecret(s, originalName)
 
 }
@@ -88,6 +97,18 @@ func (vrs *VaultRedirectStore) GetAllByName(name string) ([]secret.Secret, error
 
 	for i, s := range secrets {
 		secrets[i], _ = vrs.normalizeSecret(s, originalName)
+	}
+
+	// Persist to the default vault if redirected
+	if redirected {
+		// secrets are meant to be returned by this end point in reverse order (newest first) so when we're persisting
+		// we need to persist in the reverse order of that or things could break when doing a local fail over
+		for i := len(secrets) - 1; i >= 0; i-- {
+			_, err := setSecret(&vrs.DefaultVault, secrets[i].Name, secrets[i].Value)
+			if err != nil {
+				logger.Log.Errorf("Unable to cache redirected secret %s version %d in the default Vault", secrets[i].Name, len(secrets)-i)
+			}
+		}
 	}
 
 	return secrets, nil
@@ -115,6 +136,14 @@ func (vrs *VaultRedirectStore) GetById(id string) (secret.Secret, error) {
 	s, err := getById(v, id)
 	if err != nil || !redirected {
 		return s, err
+	}
+
+	// Persist to the default vault if redirected
+	if redirected {
+		_, err := setSecret(&vrs.DefaultVault, decodedId.Name, s.Value)
+		if err != nil {
+			logger.Log.Errorf("Unable to cache redirected secret %s in the default Vault", decodedId.Name)
+		}
 	}
 
 	s.Id = originalId
