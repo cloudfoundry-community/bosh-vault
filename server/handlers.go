@@ -37,7 +37,7 @@ func dataGetByNameHandler(ctx echo.Context) error {
 	context.Log.Debugf("request to GET %s?name=%s", dataUri, name)
 	secretResponses, err := context.Store.GetAllByName(name)
 	if err != nil {
-		context.Log.Errorf("problem fetching secret by name: %s %s", name, err)
+		ctx.Error(echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("problem fetching secret by name: %s %s", name, err)))
 		return err
 	}
 
@@ -64,7 +64,7 @@ func dataGetByIdHandler(ctx echo.Context) error {
 	context.Log.Debugf("request to %s/%s", dataUri, id)
 	vaultSecretResponse, err := context.Store.GetById(id)
 	if err != nil {
-		context.Log.Errorf("problem fetching secret by id: %s %s", id, err)
+		ctx.Error(echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("problem fetching secret by id: %s %s", id, err)))
 		return err
 	}
 
