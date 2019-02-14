@@ -35,6 +35,7 @@ func dataGetByNameHandler(ctx echo.Context) error {
 		return errors.New("name query param not passed to data?name handler")
 	}
 	context.Log.Debugf("request to GET %s?name=%s", dataUri, name)
+
 	secretResponses, err := context.Store.GetAllByName(name)
 	if err != nil {
 		ctx.Error(echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("problem fetching secret by name: %s %s", name, err)))
@@ -109,7 +110,7 @@ func dataPostHandler(ctx echo.Context) error {
 	credentialResponse, err := credential.Store(context.Store, credentialRequest.CredentialName())
 	if err != nil {
 		context.Log.Error(err)
-		context.Error(echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("problem storing %s: $s", credentialType, credentialRequest.CredentialName())))
+		context.Error(echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("problem storing %s: %s", credentialType, credentialRequest.CredentialName())))
 	}
 
 	return ctx.JSON(http.StatusCreated, &credentialResponse)

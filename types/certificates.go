@@ -28,10 +28,10 @@ type CertificateRequest struct {
 	Type       string `json:"type"`
 	Parameters struct {
 		CommonName       string   `json:"common_name"`
-		IsCa             bool     `json:"is_ca, omitempty"`
-		Ca               string   `json:"ca, omitempty"`
-		AlternativeNames []string `json:"alternative_names, omitempty"`
-		ExtendedKeyUsage []string `json:"extended_key_usage, omitempty"`
+		IsCa             bool     `json:"is_ca,omitempty"`
+		Ca               string   `json:"ca,omitempty"`
+		AlternativeNames []string `json:"alternative_names,omitempty"`
+		ExtendedKeyUsage []string `json:"extended_key_usage,omitempty"`
 	}
 }
 

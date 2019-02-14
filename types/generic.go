@@ -14,13 +14,13 @@ import (
 type GenericCredentialGenerationRequest struct {
 	Name       string          `json:"name"`
 	Type       string          `json:"type"`
-	Parameters json.RawMessage `json:"parameters, omitempty"`
+	Parameters json.RawMessage `json:"parameters,omitempty"`
 }
 
 type GenericCredentialSetRequest struct {
 	Name  string          `json:"name"`
 	Type  string          `json:"type"`
-	Value json.RawMessage `json:"value, omitempty"`
+	Value json.RawMessage `json:"value,omitempty"`
 }
 
 type CredentialSetRequest struct {
