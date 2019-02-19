@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+mkdir -p dist
+
+GOARCH=amd64 GOOS=linux go build -o dist/bosh-vault-linux-amd64
+
+cd dist
+cp bosh-vault-linux-amd64 bosh-vault
+version=$(./bosh-vault --version | awk '{print $3}')
+tar -czvf bosh-vault-linux-amd64-${version}.tar.gz bosh-vault
+rm bosh-vault
