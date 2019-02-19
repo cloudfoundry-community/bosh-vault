@@ -13,13 +13,13 @@ type redirect struct {
 	Vault    *vault.Vault
 }
 
-type VaultRedirectStore struct {
+type RedirectStore struct {
 	Redirects    []redirect
 	Vaults       []vault.Vault
 	DefaultVault vault.Vault
 }
 
-func (vrs *VaultRedirectStore) refRedirect(ref string) (bool, redirect) {
+func (vrs *RedirectStore) refRedirect(ref string) (bool, redirect) {
 	for _, rule := range vrs.Redirects {
 		if ref == rule.Ref {
 			if rule.Vault.Healthy() {
@@ -32,7 +32,7 @@ func (vrs *VaultRedirectStore) refRedirect(ref string) (bool, redirect) {
 	return false, redirect{}
 }
 
-func (vrs *VaultRedirectStore) normalizeSecret(s secret.Secret, originalName string) (secret.Secret, error) {
+func (vrs *RedirectStore) normalizeSecret(s secret.Secret, originalName string) (secret.Secret, error) {
 	decodedSecretId, err := DecodeId(s.Id)
 	if err != nil {
 		return s, err
@@ -52,11 +52,11 @@ func (vrs *VaultRedirectStore) normalizeSecret(s secret.Secret, originalName str
 	return s, nil
 }
 
-func (vrs *VaultRedirectStore) Healthy() bool {
+func (vrs *RedirectStore) Healthy() bool {
 	return vrs.DefaultVault.Healthy()
 }
 
-func (vrs *VaultRedirectStore) GetLatestByName(name string) (secret.Secret, error) {
+func (vrs *RedirectStore) GetLatestByName(name string) (secret.Secret, error) {
 	v := &vrs.DefaultVault
 	originalName := name
 	redirected, rule := vrs.refRedirect(name)
@@ -81,7 +81,7 @@ func (vrs *VaultRedirectStore) GetLatestByName(name string) (secret.Secret, erro
 
 }
 
-func (vrs *VaultRedirectStore) GetAllByName(name string) ([]secret.Secret, error) {
+func (vrs *RedirectStore) GetAllByName(name string) ([]secret.Secret, error) {
 	v := &vrs.DefaultVault
 	originalName := name
 
@@ -114,7 +114,7 @@ func (vrs *VaultRedirectStore) GetAllByName(name string) ([]secret.Secret, error
 	return secrets, nil
 }
 
-func (vrs *VaultRedirectStore) GetById(id string) (secret.Secret, error) {
+func (vrs *RedirectStore) GetById(id string) (secret.Secret, error) {
 	v := &vrs.DefaultVault
 	originalId := id
 
@@ -150,10 +150,10 @@ func (vrs *VaultRedirectStore) GetById(id string) (secret.Secret, error) {
 	return vrs.normalizeSecret(s, decodedId.Name)
 }
 
-func (vrs *VaultRedirectStore) Set(name string, value interface{}) (string, error) {
+func (vrs *RedirectStore) Set(name string, value interface{}) (string, error) {
 	return setSecret(&vrs.DefaultVault, name, value)
 }
 
-func (vrs *VaultRedirectStore) DeleteByName(name string) error {
+func (vrs *RedirectStore) DeleteByName(name string) error {
 	return deleteByName(&vrs.DefaultVault, name)
 }

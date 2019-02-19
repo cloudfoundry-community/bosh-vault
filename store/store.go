@@ -19,7 +19,7 @@ func GetStore(bvConfig config.Configuration) secret.Store {
 	}
 
 	if len(bvConfig.Redirects) > 0 {
-		var store VaultRedirectStore
+		var store RedirectStore
 		store.DefaultVault = defaultVault
 
 		for redirectConfigIndex, redirectConfiguration := range bvConfig.Redirects {
@@ -39,7 +39,7 @@ func GetStore(bvConfig config.Configuration) secret.Store {
 		}
 		return &store
 	} else {
-		var store VaultStore
+		var store SimpleStore
 		store.Vault = defaultVault
 		return &store
 	}
