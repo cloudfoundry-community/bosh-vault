@@ -12,6 +12,11 @@ init: ## Installs developer dependencies
 build: fmt ## Builds the binary
 	@go build -o bin/bosh-vault
 
+.PHONY: package
+package:
+	./local-dev/tasks/package
+
+
 .PHONY: run
 run: bin/blite build ## Builds and runs the binary using local-dev settings (requires running bosh-lite setup)
 	./local-dev/tasks/run-local-binary
