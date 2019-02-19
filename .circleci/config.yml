@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-    - image: circleci/golang:1.11.3
+    - image: circleci/golang:1.11.4
     working_directory: ~/github.com/zipcar/bosh-vault
     steps:
     - checkout
