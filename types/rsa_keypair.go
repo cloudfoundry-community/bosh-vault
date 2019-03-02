@@ -6,8 +6,6 @@ import (
 	"crypto/x509"
 	"encoding/asn1"
 	"encoding/pem"
-	"github.com/mitchellh/mapstructure"
-	"github.com/zipcar/bosh-vault/logger"
 	"github.com/zipcar/bosh-vault/secret"
 )
 
@@ -24,7 +22,6 @@ func (record RsaKeypairRecord) Store(secretStore secret.Store, name string) (Cre
 	secretId, err := secretStore.Set(name, map[string]interface{}{
 		"public_key":  record.PublicKey,
 		"private_key": record.PrivateKey,
-		"type":        RsaKeypairType,
 	})
 
 	if err != nil {
@@ -38,16 +35,6 @@ func (record RsaKeypairRecord) Store(secretStore secret.Store, name string) (Cre
 	}
 
 	return resp, nil
-}
-
-func ParseVaultDataAsRsaKeypair(rawVaultData *secret.Secret) *secret.Secret {
-	var keypairResponse RsaKeypairRecord
-	err := mapstructure.Decode(rawVaultData.Value, &keypairResponse)
-	if err != nil {
-		logger.Log.Error(err)
-	}
-	rawVaultData.Value = keypairResponse
-	return rawVaultData
 }
 
 func (r *RsaKeypairRequest) Validate() bool {

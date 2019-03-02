@@ -5,8 +5,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"github.com/mitchellh/mapstructure"
-	"github.com/zipcar/bosh-vault/logger"
 	"github.com/zipcar/bosh-vault/secret"
 	"golang.org/x/crypto/ssh"
 )
@@ -23,7 +21,6 @@ func (record SshKeypairRecord) ToVaultDataInterface() map[string]interface{} {
 		"public_key":             record.PublicKey,
 		"private_key":            record.PrivateKey,
 		"public_key_fingerprint": record.PublicKeyFingerprint,
-		"type":                   SshKeypairType,
 	}
 }
 
@@ -41,16 +38,6 @@ func (record SshKeypairRecord) Store(secretStore secret.Store, name string) (Cre
 	}
 
 	return resp, nil
-}
-
-func ParseVaultDataAsSshKeypair(rawVaultData *secret.Secret) *secret.Secret {
-	var keypairResponse SshKeypairRecord
-	err := mapstructure.Decode(rawVaultData.Value, &keypairResponse)
-	if err != nil {
-		logger.Log.Error(err)
-	}
-	rawVaultData.Value = keypairResponse
-	return rawVaultData
 }
 
 func (r *SshKeypairRequest) Validate() bool {

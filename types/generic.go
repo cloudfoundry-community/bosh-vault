@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/mitchellh/mapstructure"
+	"github.com/zipcar/bosh-vault/logger"
 	"github.com/zipcar/bosh-vault/secret"
 )
 
@@ -102,19 +104,18 @@ func ParseCredentialGenerationRequest(requestBody []byte) (CredentialGenerationR
 }
 
 func ParseSecretResponse(vaultSecretResponse secret.Secret) *secret.Secret {
-	var secretResp interface{}
+	var parsedValue interface{}
 
-	secretType := vaultSecretResponse.Value.(map[string]interface{})["type"].(string)
-	switch secretType {
-	case PasswordType:
-		secretResp = ParseVaultDataAsPassword(&vaultSecretResponse)
-	case RsaKeypairType:
-		secretResp = ParseVaultDataAsRsaKeypair(&vaultSecretResponse)
-	case SshKeypairType:
-		secretResp = ParseVaultDataAsSshKeypair(&vaultSecretResponse)
-	case CertificateType:
-		secretResp = ParseVaultDataAsCertificateRecord(&vaultSecretResponse)
+	valString, ok := vaultSecretResponse.Value.(map[string]interface{})["value"].(string)
+	if ok {
+		parsedValue = valString
+	} else {
+		err := mapstructure.Decode(vaultSecretResponse.Value, &parsedValue)
+		if err != nil {
+			logger.Log.Error(err)
+		}
 	}
 
-	return secretResp.(*secret.Secret)
+	vaultSecretResponse.Value = parsedValue
+	return &vaultSecretResponse
 }

@@ -23,7 +23,6 @@ func (record PasswordRecord) Store(secretStore secret.Store, name string) (Crede
 	var respObj PasswordResponse
 	id, err := secretStore.Set(name, map[string]interface{}{
 		"value": record,
-		"type":  PasswordType,
 	})
 
 	if err != nil {
@@ -37,11 +36,6 @@ func (record PasswordRecord) Store(secretStore secret.Store, name string) (Crede
 	}
 
 	return respObj, nil
-}
-
-func ParseVaultDataAsPassword(vaultData *secret.Secret) *secret.Secret {
-	vaultData.Value = vaultData.Value.(map[string]interface{})["value"].(string)
-	return vaultData
 }
 
 func (r *PasswordRequest) Validate() bool {

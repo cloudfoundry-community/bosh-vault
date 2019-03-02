@@ -88,7 +88,6 @@ func (record CertificateRecord) Store(secretStore secret.Store, name string) (Cr
 		"certificate": record.Certificate,
 		"ca":          record.Ca,
 		"private_key": record.PrivateKey,
-		"type":        CertificateType,
 	})
 	if err != nil {
 		return resp, err
@@ -101,16 +100,6 @@ func (record CertificateRecord) Store(secretStore secret.Store, name string) (Cr
 	}
 
 	return resp, nil
-}
-
-func ParseVaultDataAsCertificateRecord(rawVaultData *secret.Secret) *secret.Secret {
-	var certResponse CertificateRecord
-	err := mapstructure.Decode(rawVaultData.Value, &certResponse)
-	if err != nil {
-		logger.Log.Error(err)
-	}
-	rawVaultData.Value = certResponse
-	return rawVaultData
 }
 
 func (r *CertificateRequest) Generate(secretStore secret.Store) (CredentialRecordInterface, error) {
@@ -189,15 +178,19 @@ func getRootCaAndKeyByName(caName string, store secret.Store) (*x509.Certificate
 		return rootCaCert, rootCaKey, err
 	}
 
-	caRecord := ParseSecretResponse(rawCaResponse)
+	var caRecord CertificateRecord
+	err = mapstructure.Decode(rawCaResponse.Value, &caRecord)
+	if err != nil {
+		logger.Log.Errorf("%s", err)
+	}
 
-	cpb, _ := pem.Decode([]byte(caRecord.Value.(CertificateRecord).Certificate))
+	cpb, _ := pem.Decode([]byte(caRecord.Certificate))
 	rootCaCert, err = x509.ParseCertificate(cpb.Bytes)
 	if err != nil {
 		return rootCaCert, rootCaKey, err
 	}
 
-	caPrivKey, _ := pem.Decode([]byte(caRecord.Value.(CertificateRecord).PrivateKey))
+	caPrivKey, _ := pem.Decode([]byte(caRecord.PrivateKey))
 	rootCaKey, err = x509.ParsePKCS1PrivateKey(caPrivKey.Bytes)
 	if err != nil {
 		return rootCaCert, rootCaKey, err
