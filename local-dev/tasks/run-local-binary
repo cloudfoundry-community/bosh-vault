@@ -21,7 +21,7 @@ VAULT_TOKEN=$(cat ~/.vault-token)
 
 DIRECTOR_IP=$(${BLITE} networking | grep BLITE_DIRECTOR_IP | awk '{print $2}')
 
-BV_VAULT_TOKEN=${VAULT_TOKEN} BV_UAA_ADDRESS=https://${DIRECTOR_IP}:8443 ./bin/bosh-vault -config local-dev/config/local-dev.json
+BV_VAULT_TOKEN=${VAULT_TOKEN} BV_UAA_ADDRESS=https://${DIRECTOR_IP}:8443 ./bin/bosh-vault -config local-dev/config/local-dev.yml
 
 # Make sure backgrounded processes (dev vault) are killed
 trap 'kill $(jobs -p)' EXIT
