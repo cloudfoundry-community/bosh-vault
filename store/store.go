@@ -33,6 +33,7 @@ func GetStore(bvConfig config.Configuration) secret.Store {
 				var redirect redirect
 				redirect.Ref = rules.Ref
 				redirect.Redirect = rules.Redirect
+				redirect.Type = redirectConfiguration.Type
 				redirect.Vault = &store.Vaults[redirectConfigIndex]
 				store.Redirects = append(store.Redirects, redirect)
 			}
@@ -45,16 +46,7 @@ func GetStore(bvConfig config.Configuration) secret.Store {
 	}
 }
 
-func getLatestByName(v *vault.Vault, name string) (secret.Secret, error) {
-	secretRequest := VersionedSecretMetaData{
-		Name:    name,
-		Version: json.Number("0"), // 0 gets the latest
-	}
-	id, _ := EncodeId(secretRequest)
-	return getById(v, id)
-}
-
-func getAllByName(v *vault.Vault, name string) ([]secret.Secret, error) {
+func getByName(v *vault.Vault, name string) ([]secret.Secret, error) {
 	secretVersions := make([]secret.Secret, 0)
 
 	metadata, err := v.GetMetadata(name)

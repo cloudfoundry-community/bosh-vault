@@ -53,6 +53,7 @@ type RedirectRule struct {
 }
 
 type RedirectBlock struct {
+	Type  string             `json:"type" yaml:"type"`
 	Vault VaultConfiguration `json:"vault" yaml:"vault"`
 	Rules []RedirectRule     `json:"rules" yaml:"rules"`
 }

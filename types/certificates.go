@@ -172,14 +172,13 @@ func newX509CertAndKey(cr *CertificateRequest) (x509.Certificate, *rsa.PrivateKe
 func getRootCaAndKeyByName(caName string, store secret.Store) (*x509.Certificate, *rsa.PrivateKey, error) {
 	rootCaCert := &x509.Certificate{}
 	rootCaKey := &rsa.PrivateKey{}
-
-	rawCaResponse, err := store.GetLatestByName(caName)
+	rawCaResponse, err := store.GetByName(caName)
 	if err != nil {
 		return rootCaCert, rootCaKey, err
 	}
 
 	var caRecord CertificateRecord
-	err = mapstructure.Decode(rawCaResponse.Value, &caRecord)
+	err = mapstructure.Decode(rawCaResponse[0].Value, &caRecord)
 	if err != nil {
 		logger.Log.Errorf("%s", err)
 	}

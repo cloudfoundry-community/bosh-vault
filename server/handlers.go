@@ -36,7 +36,7 @@ func dataGetByNameHandler(ctx echo.Context) error {
 	}
 	context.Log.Debugf("request to GET %s?name=%s", dataUri, name)
 
-	secretResponses, err := context.Store.GetAllByName(name)
+	secretResponses, err := context.Store.GetByName(name)
 	if err != nil {
 		ctx.Error(echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("problem fetching secret by name: %s %s", name, err)))
 		return err

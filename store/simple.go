@@ -13,12 +13,8 @@ func (vs *SimpleStore) Healthy() bool {
 	return vs.Vault.Healthy()
 }
 
-func (vs *SimpleStore) GetLatestByName(name string) (secret.Secret, error) {
-	return getLatestByName(&vs.Vault, name)
-}
-
-func (vs *SimpleStore) GetAllByName(name string) ([]secret.Secret, error) {
-	return getAllByName(&vs.Vault, name)
+func (vs *SimpleStore) GetByName(name string) ([]secret.Secret, error) {
+	return getByName(&vs.Vault, name)
 }
 
 func (vs *SimpleStore) GetById(id string) (secret.Secret, error) {

@@ -7,8 +7,7 @@ type Secret struct {
 }
 
 type Store interface {
-	GetLatestByName(name string) (Secret, error)
-	GetAllByName(name string) ([]Secret, error)
+	GetByName(name string) ([]Secret, error)
 	GetById(id string) (Secret, error)
 	Set(name string, value interface{}) (string, error)
 	DeleteByName(name string) error
