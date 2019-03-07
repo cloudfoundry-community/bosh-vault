@@ -37,20 +37,23 @@ func dataGetByNameHandler(ctx echo.Context) error {
 	context.Log.Debugf("request to GET %s?name=%s", dataUri, name)
 
 	secretResponses, err := context.Store.GetByName(name)
+	context.Log.Debugf("RESPONSE: %#v", secretResponses)
 	if err != nil {
 		ctx.Error(echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("problem fetching secret by name: %s %s", name, err)))
 		return err
 	}
 
-	responseData := make([]*secret.Secret, 0)
 	for _, sr := range secretResponses {
-		responseData = append(responseData, types.ParseSecretResponse(sr))
+		valString, ok := sr.Value.(map[string]interface{})["value"].(string)
+		if ok {
+			sr.Value = valString
+		}
 	}
 
 	return ctx.JSON(http.StatusOK, struct {
-		Data []*secret.Secret `json:"data"`
+		Data []secret.Secret `json:"data"`
 	}{
-		Data: responseData,
+		Data: secretResponses,
 	})
 }
 
@@ -68,10 +71,11 @@ func dataGetByIdHandler(ctx echo.Context) error {
 		ctx.Error(echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("problem fetching secret by id: %s %s", id, err)))
 		return err
 	}
-
-	secretResp := types.ParseSecretResponse(vaultSecretResponse)
-
-	return ctx.JSON(http.StatusOK, secretResp)
+	valString, ok := vaultSecretResponse.Value.(map[string]interface{})["value"].(string)
+	if ok {
+		vaultSecretResponse.Value = valString
+	}
+	return ctx.JSON(http.StatusOK, vaultSecretResponse)
 }
 
 func dataPostHandler(ctx echo.Context) error {

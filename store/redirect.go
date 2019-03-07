@@ -7,6 +7,9 @@ import (
 	"github.com/zipcar/bosh-vault/vault"
 )
 
+const v1Redirect = "v1"
+const dynamicRedirect = "dynamic"
+
 type redirect struct {
 	Ref      string
 	Redirect string
@@ -62,7 +65,24 @@ func (rs *RedirectStore) GetByName(name string) (secrets []secret.Secret, err er
 
 	redirected, rule := rs.refRedirect(name)
 	if redirected {
+		logger.Log.Debugf("%#v", rule)
 		switch rule.Type {
+		case dynamicRedirect:
+			vaultResponse, err := rule.Vault.Client.Logical().Read(rule.Redirect)
+			if err != nil {
+				logger.Log.Errorf("Problem handling redirect %s %s -> %s", rule.Type, name, rule.Redirect)
+				return secrets, err
+			}
+			secretRequest := VersionedSecretMetaData{
+				Name:    rule.Redirect,
+				Version: json.Number("0"), // always fetch latest from redirect Vault
+			}
+			id, _ := EncodeId(secretRequest)
+			secrets = []secret.Secret{{
+				Name:  rule.Redirect,
+				Id:    id,
+				Value: vaultResponse.Data,
+			}}
 		default:
 			secrets, err = getByName(rule.Vault, rule.Redirect)
 		}
@@ -106,6 +126,9 @@ func (rs *RedirectStore) GetById(id string) (s secret.Secret, err error) {
 		}
 		id, _ = EncodeId(secretRequest)
 		switch rule.Type {
+		case dynamicRedirect:
+			// dynamic redirects will always be asked for by name FIRST and cached in the default Vault so get the cached value
+			return getById(&rs.DefaultVault, originalId)
 		default:
 			s, err = getById(rule.Vault, id)
 		}

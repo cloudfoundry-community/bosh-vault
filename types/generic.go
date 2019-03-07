@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/mitchellh/mapstructure"
-	"github.com/zipcar/bosh-vault/logger"
 	"github.com/zipcar/bosh-vault/secret"
 )
 
@@ -101,21 +99,4 @@ func ParseCredentialGenerationRequest(requestBody []byte) (CredentialGenerationR
 
 	err = json.Unmarshal(requestBody, &req)
 	return req, err
-}
-
-func ParseSecretResponse(vaultSecretResponse secret.Secret) *secret.Secret {
-	var parsedValue interface{}
-
-	valString, ok := vaultSecretResponse.Value.(map[string]interface{})["value"].(string)
-	if ok {
-		parsedValue = valString
-	} else {
-		err := mapstructure.Decode(vaultSecretResponse.Value, &parsedValue)
-		if err != nil {
-			logger.Log.Error(err)
-		}
-	}
-
-	vaultSecretResponse.Value = parsedValue
-	return &vaultSecretResponse
 }
