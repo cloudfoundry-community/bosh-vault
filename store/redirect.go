@@ -57,16 +57,19 @@ func (rs *RedirectStore) Healthy() bool {
 	return rs.DefaultVault.Healthy()
 }
 
-func (rs *RedirectStore) GetByName(name string) ([]secret.Secret, error) {
-	v := &rs.DefaultVault
+func (rs *RedirectStore) GetByName(name string) (secrets []secret.Secret, err error) {
 	originalName := name
 
 	redirected, rule := rs.refRedirect(name)
 	if redirected {
-		name = rule.Redirect
-		v = rule.Vault
+		switch rule.Type {
+		default:
+			secrets, err = getByName(rule.Vault, rule.Redirect)
+		}
+	} else {
+		secrets, err = getByName(&rs.DefaultVault, name)
 	}
-	secrets, err := getByName(v, name)
+
 	if err != nil || !redirected {
 		return secrets, err
 	}
@@ -75,23 +78,19 @@ func (rs *RedirectStore) GetByName(name string) ([]secret.Secret, error) {
 		secrets[i], _ = rs.normalizeSecret(s, originalName)
 	}
 
-	// Persist to the default vault if redirected
-	if redirected {
-		// secrets are meant to be returned by this end point in reverse order (newest first) so when we're persisting
-		// we need to persist in the reverse order of that or things could break when doing a local fail over
-		for i := len(secrets) - 1; i >= 0; i-- {
-			_, err := setSecret(&rs.DefaultVault, secrets[i].Name, secrets[i].Value)
-			if err != nil {
-				logger.Log.Errorf("Unable to cache redirected secret %s version %d in the default Vault", secrets[i].Name, len(secrets)-i)
-			}
+	// secrets are meant to be returned by this end point in reverse order (newest first) so when we're persisting
+	// we need to persist in the reverse order of that or things could break when doing a local fail over
+	for i := len(secrets) - 1; i >= 0; i-- {
+		_, err := setSecret(&rs.DefaultVault, secrets[i].Name, secrets[i].Value)
+		if err != nil {
+			logger.Log.Errorf("Unable to cache redirected secret %s version %d in the default Vault", secrets[i].Name, len(secrets)-i)
 		}
 	}
 
 	return secrets, nil
 }
 
-func (rs *RedirectStore) GetById(id string) (secret.Secret, error) {
-	v := &rs.DefaultVault
+func (rs *RedirectStore) GetById(id string) (s secret.Secret, err error) {
 	originalId := id
 
 	decodedId, err := DecodeId(id)
@@ -103,23 +102,24 @@ func (rs *RedirectStore) GetById(id string) (secret.Secret, error) {
 	if redirected {
 		secretRequest := VersionedSecretMetaData{
 			Name:    rule.Redirect,
-			Version: json.Number("0"), // redirects always fetch latest from redirect Vault
+			Version: json.Number("0"), // always fetch latest from redirect Vault
 		}
 		id, _ = EncodeId(secretRequest)
-		v = rule.Vault
+		switch rule.Type {
+		default:
+			s, err = getById(rule.Vault, id)
+		}
+	} else {
+		s, err = getById(&rs.DefaultVault, id)
 	}
 
-	s, err := getById(v, id)
 	if err != nil || !redirected {
 		return s, err
 	}
 
-	// Persist to the default vault if redirected
-	if redirected {
-		_, err := setSecret(&rs.DefaultVault, decodedId.Name, s.Value)
-		if err != nil {
-			logger.Log.Errorf("Unable to cache redirected secret %s in the default Vault", decodedId.Name)
-		}
+	_, err = setSecret(&rs.DefaultVault, decodedId.Name, s.Value)
+	if err != nil {
+		logger.Log.Errorf("Unable to cache redirected secret %s in the default Vault", decodedId.Name)
 	}
 
 	s.Id = originalId
