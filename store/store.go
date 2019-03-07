@@ -30,12 +30,12 @@ func GetStore(bvConfig config.Configuration) secret.Store {
 			}
 
 			for _, rules := range redirectConfiguration.Rules {
-				var redirect redirect
+				var redirect Rule
 				redirect.Ref = rules.Ref
 				redirect.Redirect = rules.Redirect
 				redirect.Type = redirectConfiguration.Type
 				redirect.Vault = &store.Vaults[redirectConfigIndex]
-				store.Redirects = append(store.Redirects, redirect)
+				store.Rules = append(store.Rules, redirect)
 			}
 		}
 		return &store

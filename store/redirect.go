@@ -10,7 +10,7 @@ import (
 const v1Redirect = "v1"
 const dynamicRedirect = "dynamic"
 
-type redirect struct {
+type Rule struct {
 	Ref      string
 	Redirect string
 	Type     string
@@ -18,13 +18,13 @@ type redirect struct {
 }
 
 type RedirectStore struct {
-	Redirects    []redirect
+	Rules        []Rule
 	Vaults       []vault.Vault
 	DefaultVault vault.Vault
 }
 
-func (rs *RedirectStore) refRedirect(ref string) (bool, redirect) {
-	for _, rule := range rs.Redirects {
+func (rs *RedirectStore) refRule(ref string) (bool, Rule) {
+	for _, rule := range rs.Rules {
 		if ref == rule.Ref {
 			if rule.Vault.Healthy() {
 				return true, rule
@@ -33,7 +33,7 @@ func (rs *RedirectStore) refRedirect(ref string) (bool, redirect) {
 			}
 		}
 	}
-	return false, redirect{}
+	return false, Rule{}
 }
 
 func (rs *RedirectStore) normalizeSecret(s secret.Secret, originalName string) (secret.Secret, error) {
@@ -63,16 +63,13 @@ func (rs *RedirectStore) Healthy() bool {
 func (rs *RedirectStore) GetByName(name string) (secrets []secret.Secret, err error) {
 	originalName := name
 
-	redirected, rule := rs.refRedirect(name)
+	redirected, rule := rs.refRule(name)
 	if redirected {
-		logger.Log.Debugf("%#v", rule)
 		switch rule.Type {
-		case v1Redirect:
-			fallthrough
-		case dynamicRedirect:
+		case v1Redirect, dynamicRedirect:
 			vaultResponse, err := rule.Vault.Client.Logical().Read(rule.Redirect)
 			if err != nil {
-				logger.Log.Errorf("Problem handling redirect %s %s -> %s", rule.Type, name, rule.Redirect)
+				logger.Log.Errorf("Problem handling redirect rule type:%s redirect: %s -> %s", rule.Type, name, rule.Redirect)
 				return secrets, err
 			}
 			secretRequest := VersionedSecretMetaData{
@@ -120,7 +117,7 @@ func (rs *RedirectStore) GetById(id string) (s secret.Secret, err error) {
 		return secret.Secret{}, err
 	}
 
-	redirected, rule := rs.refRedirect(decodedId.Name)
+	redirected, rule := rs.refRule(decodedId.Name)
 	if redirected {
 		secretRequest := VersionedSecretMetaData{
 			Name:    rule.Redirect,
@@ -128,10 +125,10 @@ func (rs *RedirectStore) GetById(id string) (s secret.Secret, err error) {
 		}
 		id, _ = EncodeId(secretRequest)
 		switch rule.Type {
-		case v1Redirect:
-			fallthrough
-		case dynamicRedirect:
-			// dynamic redirects will always be asked for by name FIRST and cached in the default Vault so get the cached value
+		case v1Redirect, dynamicRedirect:
+			// dynamic and v1 redirects will always be asked for by name FIRST and
+			// cached in the default Vault so get the cached value, redeploys will
+			// ask for the variable by name again, thus regenerating it.
 			return getById(&rs.DefaultVault, originalId)
 		default:
 			s, err = getById(rule.Vault, id)
