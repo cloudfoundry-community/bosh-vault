@@ -1,25 +1,18 @@
 # Bosh Vault
-This repo is an attempt to make an implementation of the config server API using Vault as a backend. It is a work in progress and should not be used.
+This repo is an implementation of the [config server API](ttps://github.com/cloudfoundry/config-server/blob/master/docs/api.md) using Vault as a backend. It is geared towards teams that already 
+have working secrets management with Vault and want to leverage that for their Bosh infrastructure in lieu of Credhub.
+
+There is a functional [Bosh release for this project](https://github.com/Zipcar/bosh-vault-release/releases) but it can also be run as a standalone
+binary outside of Bosh.
 
 [![CircleCI](https://circleci.com/gh/Zipcar/bosh-vault/tree/master.svg?style=svg)](https://circleci.com/gh/Zipcar/bosh-vault/tree/master)
 
-# Current Progress
-Currently the code is "feature complete" according to the [config server documentation](https://github.com/cloudfoundry/config-server/blob/master/docs/api.md) though there are additional pieces of metadata that could be added to make 
-the returned data more like Credhub's implementation (creation time, etc). The following endpoints are "working":
+# Vault Requirements
+Bosh-vault requires a Vault server with a [KV2 mount](https://www.vaultproject.io/docs/secrets/kv/kv-v2.html) available.
+```
+vault secrets enable -version=2 -path=config-server kv
+```
 
-  - Get by id
-  - Get by name
-  - Put
-  - Generate password
-  - Generate certificate
-  - Generate SSH Key
-  - Generate RSA Key
-  - Delete by name
-
-There is a functional [Bosh release for this project](https://github.com/Zipcar/bosh-vault-release/releases).
-
-# Vault Configuration
-Bosh-vault requires a Vault server with a [kv2 mount](https://www.vaultproject.io/docs/secrets/kv/kv-v2.html) available.
 In order for bosh-vault to work with an existing Vault server it needs a token. That token should be attached to a 
 policy that looks something like this (assuming your KV2 mount was `config-server`):
 
@@ -38,30 +31,32 @@ vault policy write config-server config-server.hcl
 ```
 
 You'll also need to generate a token for the config server to use that is tied to this policy, we recommend using a 
-periodic token as bosh-vault will automatically refresh its token based on the renewal configuration property.
+periodic token as bosh-vault can be configured to automatically renew its token.
 
 ```
 vault token create -format=json -period=168h -policy=config-server -display-name=bosh-vault-config-server
 ```
 
 # Configuration
-The bosh-vault binary can be configured in a couple of ways: a configuration file or the environment. A configuration file
-can be passed using the flag: `-config` and passing a path to a JSON or YAML file of the form:
+The bosh-vault binary can be configured using a configuration file or environment variables. In the case where both are 
+provided environment variables will override configuration file settings.
+
+A configuration file can be passed using the flag: `-config` and passing a path to a JSON or YAML file of the form:
 
 ```
 api:
-  address: 0.0.0.0:1337 (Where the config server should bind to)
-  draintimeout: 30 (How many seconds the config server should drain when shutting down)
+  address: 0.0.0.0:1337 (Binding for the config-server API)
+  draintimeout: 30 (How many seconds the config server should drain connections when shutting down)
 log:
-  level: ERROR 
+  level: ERROR (ERROR | INFO | DEBUG)
 vault:
-  address: NO_DEFAULT
-  token: NO_DEFAULT
-  timeout: 30 (How many seconds we should wait when contacting Vault before timing out)
-  mount: secret (The name of the KV mount in Vault)
+  address: NO_DEFAULT (Address of a Vault server with KV2 mount available for config-server to use)
+  token: NO_DEFAULT (Token that allows data and metadata access on config-server's KV2 mount; periodic token suggested)
+  timeout: 30 (How many seconds to wait when contacting Vault before timing out)
+  mount: secret (The name of the KV2 mount in Vault)
   ca: NO_DEFAULT (Path to the CA to trust when connecting to Vault)
   skipverify: false (Whether or not to skip verifying TLS trust)
-  renewinterval: 3600 (How many seconds we should wait before renewing our vault token)
+  renewinterval: 3600 (How many seconds to wait before renewing the vault token)
 tls:
   cert: NO_DEFAULT (Path to the cert used to secure the config server api)
   key: NO_DEFUAULT (Path to the key used to secure the config server api)
@@ -77,25 +72,12 @@ uaa:
 These variables can also be passed on the environment by prefixing them with `BV` and using underscores. For example to 
 pass the uaa address: `BV_UAA_ADDRESS`
 
-# Additional Features: Redirect Pull Through Cache
+# Redirect Pull Through Cache
 This implementation of config server supports a feature that is not in the API spec or CredHub implementation: redirects.
-The idea of this feature is to provide a way for config server to access "read-only" authoritative values for certain names
-when GET requests are made.
+Redirects are meant to provide a means to operationalize some of Vaults most powerful features via config-server endpoints.
 
-This is ideal for things like:
-
-  - shared certificates
-  - shared API keys
-  - shared credentials of any kind
-
-Ideally this allows operators to maintain a shared central Vault server and control access to any shared secrets using
-read only tokens. When a requested name or id matches a configured redirect rule bosh-vault will reach out to the
-alternate Vault and return the secret value. This improves and centralizes the audit trails for these shared secrets 
-in contrast to migrating them around by hand to every environment.
-
-To protect against single point of failure issues Bosh Vault also copies the value into the main "local" Vault every time
-it is requested. This locally stored ("last known") value will be returned only if a connection to the redirect vault 
-server cannot be established within the configured timeout value. 
+All redirects copy the redirect value into the default Vault every time they are requested. This "last known" value 
+will be returned only if the configured redirect vault is unhealthy (sealed, down, etc).
 
 Redirects are only evaluated for GET requests. PUT, POST, and DELETE requests never apply redirect logic and operate against
 the "local" Vault. Any changes applied "locally" to secrets with a configured redirect will be overwritten on the next 
@@ -105,11 +87,12 @@ Configure redirects with the following syntax:
 
 ```
 redirects:
-  - vault:
+  - type: upstream (v1 | dynamic | upstream)
+    vault:
       address: NO_DEFAULT
       token: NO_DEFAULT
       timeout: 30 (How many seconds we should wait when contacting Vault before timing out)
-      mount: secret (The name of the KV mount in Vault)
+      mount: secret (The name of the KV2 mount in Vault, not used for v1 or dynamic redirects)
       ca: NO_DEFAULT (Path to the CA to trust when connecting to Vault)
       skipverify: false (Whether or not to skip verifying TLS trust)
       renewinterval: 3600 (How many seconds we should wait before renewing our vault token)
@@ -121,22 +104,64 @@ redirects:
  
 ```
 
-# Resources
-  - [Config server api documentation](https://github.com/cloudfoundry/config-server/blob/master/docs/api.md)
-  - [Credhub Implementation Docs](http://credhub-api.cfapps.io/version/2.1/)
+Note redirects is an array where multiple sources and types can be specified. Pattern matching and wild carding on refs 
+is explicitly NOT supported. If two rules collide the first one will be followed.
+
+## Redirect Types
+Three types of redirects are supported:
+  
+### upstream
+
+Upstream redirects are meant to provide a way to request credentials from different Vault servers or paths that are already
+using KV2. Access can be controlled with a unique token and policy to accomplish things like "read-only" credentials. This
+also allows for centralized management and auditing of certain credentials. Fetched values are cached in the default Vault
+store at the expected ref and in the event the upstream can't be reached the local "last-known" value will be returned.
+
+### v1
+
+Migrating from KV1 to KV2 can be challenging depending on your existing Vault configuration and usage. This redirect is 
+meant to fetch values from static locations in Vault that are still using KV1. This feature's caching behavior functions 
+just like upstream redirects and is an ideal migration path to KV2 and versioned infrastructure secrets. Once a single 
+deployment has pulled the values from KV1 the redirect can be removed and config server will operate as normal on the 
+newly created KV2 entry at the expected path.
+
+## dynamic
+
+Vault supports lots of dynamic secret engines which can both generate and expire credentials for many external services. 
+Dynamic redirects allow config server to take advantage of these. For example, let's say you configured a postgres DB 
+role in Vault to generate expiring access to postgres at: `database/creds/my-app-role`
+
+In your template you could then request: 
+```
+PGUSER: ((dynamic_postgres.username))
+PGPASS: ((dynamic_postgres.password))
+```
+
+Using the following redirect rule:
+```
+redirects:
+  - type: "dynamic"
+    rules:
+      - ref: "/BoshDirectorName/my_app_deployment/dynamic_postgres"
+        redirect: "database/creds/my-app-role"
+    vault: *vault
+```
+
+New credentials will be fetched on each deploy and Vault will expire the old ones according to TTLs managed by your Vault
+team. Effectively solving credential rotation in cases where Bosh can get creds from one of Vault's supported secret engines. 
 
 # Architecture
-The Vault Cloudfoundry Config Server is meant to be run alongside Vault and proxy config server requests. It could also be located 
+The bosh-vault config server implementation is meant to be run alongside Vault and proxy config server requests. It could also be located 
 on the director as a job using the bosh-release but this has security implications as it would mean storing the token for the config 
-server on the director itself.
+server on the director itself. It could also be deployed as its own deployment but this can make management a little more cumbersome.
 
 ![high level architecture diagram](docs/diagrams/high-level-architecture.jpg)
 
 ## IDs and Names
-The config server api requires all secrets to have a unique ID that points to a specific version of a given secret. Vault's [KV2 backend](https://www.vaultproject.io/docs/secrets/kv/kv-v2.html) implements versioned 
+The config-server api requires all secrets to have a unique ID that points to a specific version of a given secret. Vault's [KV2 backend](https://www.vaultproject.io/docs/secrets/kv/kv-v2.html) implements versioned 
 secrets already, however there is no "publicly" accessible concept of a UUID for a secret in Vault. Instead, secret versions
 are requested at a given Vault path, for example: `vault kv get -version 3 secret/some_path/some_secret`. This is in contrast
-to an implementation like Credhub for example which relies on a relational data store. 
+to an implementation like Credhub which relies on a relational data store. 
 
 There were a few ways to deal with this: 
   - Store multiple copies of the secret at different paths in Vault
@@ -145,18 +170,14 @@ There were a few ways to deal with this:
 
 The first option is obviously problematic for several reasons. The key ones being: difficulty managing access control rules (breaks the security model), and the
 duplicated effort required to accomplish something (secret versioning) that Vault is already doing for us. Likewise we felt maintaining some kind of map of UUIDs
-to paths was not a good use of network traffic and prone to error. We opted for the third path. As a result the ids generated by this config server implementation 
-can get long. Our understanding is that these ids are only used by the bosh director anyway, in which case their length is largely irrelevant. 
+to paths was not a good use of network traffic and prone to error. We opted for the third path and decided to have our IDs 
+be base64 representations of credential metadata (name and version). Our understanding is that these ids are only used by 
+the bosh director anyway, in which case their length is largely irrelevant. 
 
-The other issue that arises without a relational data store is that any given "name" for a secret needs to also be a valid path in Vault. Spaces are a problematic
-character since they're valid characters for a Bosh deployment name but invalid in a secret path. As a result our implementation
-would need to in some way escape this and other potentially problematic characters.
-
-We were able to solve both of these issues by making our id's base64 encoded metadata objects that contain no secrets:
 
 ```
 {
-  name: "/BLite Bosh Director/nginx/some_ssh_key",
+  name: "/Director/nginx/some_password",
   version: 1
 }
 ```
@@ -164,75 +185,10 @@ We were able to solve both of these issues by making our id's base64 encoded met
 would encode to:
 
 ```
-ewogIG5hbWU6ICIvQkxpdGUgQm9zaCBEaXJlY3Rvci9uZ2lueC9zb21lX3NzaF9rZXkiLAogIHZlcnNpb246IDEKfQ==
+eyJuYW1lIjoiL0RpcmVjdG9yL25naW54L3NvbWVfcGFzc3dvcmQiLCJ2ZXJzaW9uIjoxfQ==
 ```
 
 A long an incomprehensible id to be sure, but it is guaranteed to be:
-  - unique and in a 1-to-1 relationship with a given path
-  - secretless (paths in Vault or a secret store are not considered secret)
-  - debuggable
-
-# Contributing/Developer Workflow
-This project is written in Go and the below workflow assumes you have a functional Go development environment setup that supports
-the use of Go modules.
-
- 1. Clone this repo and `cd` into it.
- 1. Run `make` to see the available workflow commands.
- 1. Run `make test` to run tests locally.
-
-## Testing with a preexisting Bosh director or no Bosh director
- 1. Run `make build`
- 1. Use the available configuration options to write a custom configuration file (JSON or YAML) and pass it to the built binary via the `-config` flag
- 
-## Testing with a local Bosh director
-To simplify the developer workflow this project relies on a tool called `blite` that makes it easy to get a bosh-lite 
-environment setup on your local machine. The makefile will download the latest `blite` script [from the Zipcar/blite repo](https://github.com/Zipcar/blite) 
-but you are expected to already have the [prerequisites](https://github.com/Zipcar/blite#dependencies) installed. 
-
-`blite` will give useful error messages if it notices one or more prerequisites are missing. The makefile specifies a 
-few test deployment scripts that will ensure things are working as expected, but once the director is up you're able to 
-do anything you'd otherwise be able to do with a bosh director. Resources used to configure the local binary and local
-director are in the `local-dev` directory.
-
-### Option 1: All-In-One Test Deploys
- 1. Run `make bosh-lite` to setup a local bosh-lite director running UAA and configured to communicate with a local bosh-vault binary
- 1. Run `make run` to start the config server
- 1. Run `make test-deploy-nginx` to deploy NGINX that will serve a single page that is filled with plain text credentials to show they can all be generated. 
- 
-### Option 2: Just The Director
- 1. Run `make bosh-lite` to setup a local bosh-lite director running UAA and configured to communicate with a local bosh-vault binary
- 1. Run `make run` to start the config server
- 1. Run `eval $(./bin/blite env-eval)` to seed your terminal's environment with the credentials of your local bosh director so you can use standard `bosh` commands
- 
-### Option 3: Blite/bosh-vault Power User
- 1. Make sure the certs you want to use are in `local-dev/certs` (the next step will generate default certs if they don't exist)
- 1. Run the compiled binary using your desired configuration (or the default in `local-dev/config`)
- 1. Run `blite create` passing in operator and vars files using the `BLITE_OPS_FILE_GLOB` and `BLITE_VARS_FILE_GLOB` environment variables, at a minimum you'll need what is captured in `local-dev/operators` and `local-dev/vars`. Alternatively just add operator/vars files directly to those directories using the same naming convention.
- 1. Run `eval $(./bin/blite env-eval)` to seed your terminal's environment with the credentials of your local bosh director so you can use standard `bosh` commands.
- 1. Use bosh to set a custom cloud config (or use `blite cloud-config` for default settings)
- 1. Use as a normal bosh director you power user you!
- 
-### Troubleshooting Dev Workflow Issues
-
-#### Certificate Problems
-Certificate problems are the most common cause of local dev frustration. Bosh requires config servers use TLS; to try
-and make local development as simple as possible there is no port forwarding or DNS level magic happening on the bosh-lite
-director. Instead the binary is bound on `0.0.0.0`, certs are generated for the hosts primary LAN IP (obtained using routes table),
-and the director is configured to talk to the host machine over it's primary LAN IP. This works well until your IP changes;
-say from a VPN connection, new wifi network, etc. For the moment the best way to deal with this issue is to run `make destroy`
-and then start over with one of the local Bosh director options specified above. It should only take a few minutes to spin up 
-a new director with fresh certs. 
-
-For the brave, it is possible to manually fix cert mismatch problems by deleting in `local-dev/certs/local-dev.*`, running 
-`make local-certs` to generate new ones, replacing `/var/vcap/jobs/director/config/config_server_ca.cert` and running 
-`monit restart all` on the director then restarting bosh-vault with `make run` but it's probably a better idea to just 
-destroy and recreate, it's fast and less error prone. Note that if you're reusing a shell session you may need to re-run
-`eval $(./bin/blite env-eval)` to ensure your `bosh` command can communicate with the new director.
-
-#### Networking Problems
-`blite` provides networking helpers (like [`blite route-add`](https://github.com/Zipcar/blite#route-add)) that ensure your host machine can communicate with the things you deploy with a bosh-lite director.
-Run `./bin/blite networking` to see what your current bosh-lite networking configuration is (default is bosh-lite default 
-from the bosh-deployment repo). As mentioned in the [blite documentation](https://github.com/Zipcar/blite#avoiding-network-issues) your local network, VPN, etc
-might conflict. If that's the case you can override the environment variables listed by the `networking` command and redeploy. 
-If your networking issue is constant, say due to VPN routes conflicting, you should override those environment variables 
-permanently in something like `~/.bashrc` or `~/.bash_profile` to ensure `blite` will always work properly.
+  - unique and in a 1-to-1 relationship with a given version of a secret
+  - secretless (paths in Vault are not considered secret)
+  - debuggable (base64 decode the ID to see what it was looking for)
