@@ -20,22 +20,18 @@ type VersionedSecretMetaData struct {
 	Version json.Number `json:"version"`
 }
 
-func noPaddingBase64Encoding() *base64.Encoding {
-	return base64.StdEncoding.WithPadding(base64.NoPadding)
-}
-
 func EncodeId(record VersionedSecretMetaData) (string, error) {
 	recordBytes, err := json.Marshal(record)
 	if err != nil {
 		logger.Log.Errorf("problem marshaling versioned secret meta data: %+v", record)
 		return "", err
 	}
-	return noPaddingBase64Encoding().EncodeToString(recordBytes), nil
+	return base64.URLEncoding.EncodeToString(recordBytes), nil
 }
 
 func DecodeId(id string) (VersionedSecretMetaData, error) {
 	var record VersionedSecretMetaData
-	recordBytes, err := noPaddingBase64Encoding().DecodeString(id)
+	recordBytes, err := base64.URLEncoding.DecodeString(id)
 	if err != nil {
 		logger.Log.Errorf("problem decoding id: %s", id)
 		return record, err

@@ -37,23 +37,24 @@ func dataGetByNameHandler(ctx echo.Context) error {
 	context.Log.Debugf("request to GET %s?name=%s", dataUri, name)
 
 	secretResponses, err := context.Store.GetByName(name)
-	context.Log.Debugf("RESPONSE: %#v", secretResponses)
 	if err != nil {
 		ctx.Error(echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("problem fetching secret by name: %s %s", name, err)))
 		return err
 	}
 
+	responseData := make([]secret.Secret, 0)
 	for _, sr := range secretResponses {
 		valString, ok := sr.Value.(map[string]interface{})["value"].(string)
 		if ok {
 			sr.Value = valString
 		}
+		responseData = append(responseData, sr)
 	}
 
 	return ctx.JSON(http.StatusOK, struct {
 		Data []secret.Secret `json:"data"`
 	}{
-		Data: secretResponses,
+		Data: responseData,
 	})
 }
 

@@ -67,6 +67,8 @@ func (rs *RedirectStore) GetByName(name string) (secrets []secret.Secret, err er
 	if redirected {
 		logger.Log.Debugf("%#v", rule)
 		switch rule.Type {
+		case v1Redirect:
+			fallthrough
 		case dynamicRedirect:
 			vaultResponse, err := rule.Vault.Client.Logical().Read(rule.Redirect)
 			if err != nil {
@@ -126,6 +128,8 @@ func (rs *RedirectStore) GetById(id string) (s secret.Secret, err error) {
 		}
 		id, _ = EncodeId(secretRequest)
 		switch rule.Type {
+		case v1Redirect:
+			fallthrough
 		case dynamicRedirect:
 			// dynamic redirects will always be asked for by name FIRST and cached in the default Vault so get the cached value
 			return getById(&rs.DefaultVault, originalId)
