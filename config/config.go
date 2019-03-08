@@ -4,7 +4,6 @@ import (
 	"github.com/micro/go-config"
 	"github.com/micro/go-config/source/env"
 	"github.com/micro/go-config/source/file"
-	"log"
 )
 
 const DefaultApiListenAddress = "0.0.0.0:1337"
@@ -73,17 +72,12 @@ func ParseConfig(configFilePath *string) Configuration {
 		return bvConfig
 	} else {
 		conf := config.NewConfig()
-		err := conf.Load(file.NewSource(
+		// ok to ignore errors on loading because of defaulting behavior
+		_ = conf.Load(file.NewSource(
 			file.WithPath(*configFilePath)),
 			env.NewSource(env.WithStrippedPrefix("BV")),
 		)
-		if err != nil {
-			log.Fatal("problem loading configuration")
-		}
-		err = conf.Scan(&bvConfig)
-		if err != nil {
-			log.Fatal("problem unmarshalling configuration")
-		}
+		_ = conf.Scan(&bvConfig)
 		return bvConfig
 	}
 }
