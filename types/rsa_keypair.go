@@ -78,8 +78,8 @@ func (r *RsaKeypairRequest) CredentialName() string {
 }
 
 type RsaKeypairRecord struct {
-	PublicKey  string `json:"public_key" mapstructure:"public_key"`
-	PrivateKey string `json:"private_key" mapstructure:"private_key"`
+	PublicKey  string `json:"public_key"`
+	PrivateKey string `json:"private_key"`
 }
 
 type RsaKeypairResponse struct {

@@ -9,7 +9,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/mitchellh/mapstructure"
 	"github.com/zipcar/bosh-vault/logger"
 	"github.com/zipcar/bosh-vault/secret"
 	"math/big"
@@ -42,9 +41,9 @@ type CertificateResponse struct {
 }
 
 type CertificateRecord struct {
-	Certificate string `json:"certificate" mapstructure:"certificate"`
-	Ca          string `json:"ca" mapstructure:"ca"`
-	PrivateKey  string `json:"private_key" mapstructure:"private_key"`
+	Certificate string `json:"certificate"`
+	Ca          string `json:"ca"`
+	PrivateKey  string `json:"private_key"`
 }
 
 func (r *CertificateRequest) CredentialType() string {
@@ -177,19 +176,15 @@ func getRootCaAndKeyByName(caName string, store secret.Store) (*x509.Certificate
 		return rootCaCert, rootCaKey, err
 	}
 
-	var caRecord CertificateRecord
-	err = mapstructure.Decode(rawCaResponse[0].Value, &caRecord)
-	if err != nil {
-		logger.Log.Errorf("%s", err)
-	}
+	caRecord := rawCaResponse[0].Value.(map[string]interface{})
 
-	cpb, _ := pem.Decode([]byte(caRecord.Certificate))
+	cpb, _ := pem.Decode([]byte(caRecord["certificate"].(string)))
 	rootCaCert, err = x509.ParseCertificate(cpb.Bytes)
 	if err != nil {
 		return rootCaCert, rootCaKey, err
 	}
 
-	caPrivKey, _ := pem.Decode([]byte(caRecord.PrivateKey))
+	caPrivKey, _ := pem.Decode([]byte(caRecord["private_key"].(string)))
 	rootCaKey, err = x509.ParsePKCS1PrivateKey(caPrivKey.Bytes)
 	if err != nil {
 		return rootCaCert, rootCaKey, err

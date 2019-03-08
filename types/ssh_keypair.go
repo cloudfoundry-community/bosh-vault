@@ -16,17 +16,13 @@ type SshKeypairRequest struct {
 	Type string `json:"type"`
 }
 
-func (record SshKeypairRecord) ToVaultDataInterface() map[string]interface{} {
-	return map[string]interface{}{
+func (record SshKeypairRecord) Store(secretStore secret.Store, name string) (CredentialResponse, error) {
+	var resp SshKeypairResponse
+	secretId, err := secretStore.Set(name, map[string]interface{}{
 		"public_key":             record.PublicKey,
 		"private_key":            record.PrivateKey,
 		"public_key_fingerprint": record.PublicKeyFingerprint,
-	}
-}
-
-func (record SshKeypairRecord) Store(secretStore secret.Store, name string) (CredentialResponse, error) {
-	var resp SshKeypairResponse
-	secretId, err := secretStore.Set(name, record.ToVaultDataInterface())
+	})
 	if err != nil {
 		return resp, err
 	}
@@ -81,9 +77,9 @@ func (r *SshKeypairRequest) CredentialName() string {
 }
 
 type SshKeypairRecord struct {
-	PublicKey            string `json:"public_key" mapstructure:"public_key"`
-	PrivateKey           string `json:"private_key" mapstructure:"private_key"`
-	PublicKeyFingerprint string `json:"public_key_fingerprint" mapstructure:"public_key_fingerprint"`
+	PublicKey            string `json:"public_key"`
+	PrivateKey           string `json:"private_key"`
+	PublicKeyFingerprint string `json:"public_key_fingerprint"`
 }
 
 type SshKeypairResponse struct {
