@@ -23,6 +23,10 @@ func GetVault(vaultConfig config.VaultConfiguration) (Vault, error) {
 		vaultConfig.RenewalInterval = DefaultVaultRenewalIntervalSeconds
 	}
 
+	if vaultConfig.Mount == "" {
+		vaultConfig.Mount = config.DefaultVaultMount
+	}
+
 	vault.Config = vaultConfig
 	// Get the SystemCertPool, continue with an empty pool on error
 	rootCAs, _ := x509.SystemCertPool()
@@ -137,8 +141,13 @@ func (v *Vault) Healthy() bool {
 }
 
 func (v *Vault) sanitizeName(name string) string {
-	// todo: no spaces allowed, anything else that should be here?
-	return strings.Replace(name, " ", "", -1)
+	// name should not have spaces
+	name = strings.Replace(name, " ", "", -1)
+	// names in this context should start with a /
+	if !strings.HasPrefix(name, "/") {
+		name = "/" + name
+	}
+	return name
 }
 
 func (v *Vault) parseDataPath(name string) string {
