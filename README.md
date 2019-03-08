@@ -125,7 +125,7 @@ just like upstream redirects and is an ideal migration path to KV2 and versioned
 deployment has pulled the values from KV1 the redirect can be removed and config server will operate as normal on the 
 newly created KV2 entry at the expected path.
 
-## dynamic
+### dynamic
 
 Vault supports lots of dynamic secret engines which can both generate and expire credentials for many external services. 
 Dynamic redirects allow config server to take advantage of these. For example, let's say you configured a postgres DB 
