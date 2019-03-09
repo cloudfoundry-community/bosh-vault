@@ -60,6 +60,19 @@ func (rs *RedirectStore) Healthy() bool {
 	return rs.DefaultVault.Healthy()
 }
 
+func (rs *RedirectStore) Exists(name string) bool {
+	// assumption is that EXISTENCE always refers to the expected location and default Vault
+	return rs.DefaultVault.Exists(name)
+}
+
+func (rs *RedirectStore) GetLatestByName(name string) (secret.Secret, error) {
+	secrets, err := rs.GetByName(name)
+	if err != nil {
+		return secret.Secret{}, err
+	}
+	return secrets[0], nil
+}
+
 func (rs *RedirectStore) GetByName(name string) (secrets []secret.Secret, err error) {
 	originalName := name
 

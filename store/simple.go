@@ -13,6 +13,18 @@ func (vs *SimpleStore) Healthy() bool {
 	return vs.Vault.Healthy()
 }
 
+func (vs *SimpleStore) Exists(name string) bool {
+	return vs.Vault.Exists(name)
+}
+
+func (vs *SimpleStore) GetLatestByName(name string) (secret.Secret, error) {
+	secrets, err := vs.GetByName(name)
+	if err != nil {
+		return secret.Secret{}, err
+	}
+	return secrets[0], nil
+}
+
 func (vs *SimpleStore) GetByName(name string) ([]secret.Secret, error) {
 	return getByName(&vs.Vault, name)
 }

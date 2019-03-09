@@ -89,11 +89,20 @@ func dataPostHandler(ctx echo.Context) error {
 
 	context.Log.Debugf("request: %s", requestBody)
 
-	credentialRequest, err := types.ParseCredentialGenerationRequest(requestBody)
+	credentialRequest, noOverrideMode, err := types.ParseCredentialGenerationRequest(requestBody)
 	if err != nil {
 		context.Log.Error("request error: ", err)
 		ctx.Error(echo.NewHTTPError(http.StatusBadRequest, err.Error()))
 		return err
+	}
+
+	if noOverrideMode && context.Store.Exists(credentialRequest.CredentialName()) {
+		latest, err := context.Store.GetLatestByName(credentialRequest.CredentialName())
+		if err != nil {
+			context.Log.Errorf("problem getting latest in no-override mode: %s", err)
+			ctx.Error(echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("problem getting latest in no-override mode: %s", err)))
+		}
+		return ctx.JSON(http.StatusOK, &latest)
 	}
 
 	credentialType := credentialRequest.CredentialType()

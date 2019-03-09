@@ -7,6 +7,8 @@ type Secret struct {
 }
 
 type Store interface {
+	Exists(name string) bool
+	GetLatestByName(name string) (Secret, error)
 	GetByName(name string) ([]Secret, error)
 	GetById(id string) (Secret, error)
 	Set(name string, value interface{}) (string, error)

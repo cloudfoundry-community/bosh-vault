@@ -91,6 +91,31 @@ type Vault struct {
 	Config config.VaultConfiguration
 }
 
+func (v *Vault) exists(path string) bool {
+	r := v.Client.NewRequest("GET", path)
+
+	resp, _ := v.Client.RawRequest(r)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+
+	if resp != nil && resp.StatusCode == 200 {
+		return true
+	}
+
+	return false
+}
+
+func (v *Vault) ExistsV1(name string) bool {
+	path := fmt.Sprintf("/v1/%s%s", v.Config.Mount, v.sanitizeName(name))
+	return v.exists(path)
+}
+
+func (v *Vault) Exists(name string) bool {
+	path := fmt.Sprintf("/v1/%s", v.parseDataPath(name))
+	return v.exists(path)
+}
+
 func (v *Vault) Get(name string, params map[string]string) (map[string]interface{}, error) {
 	path := v.parseDataPath(name)
 	vaultReply, err := kvReadRequest(v.Client, path, params)
