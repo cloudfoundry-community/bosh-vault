@@ -67,6 +67,7 @@ uaa:
   ca: NO_DEFAULT (Path to the CA to trust when connecting to UAA)
   skipverify: false (Whether or not to skip verifying TLS trust)
   audienceclaim: config_server (Expected audience claim on a given JWT)
+  keyrefreshinterval: 86400 (How many seconds to wait before fetching updated public key info from UAA) 
 ```
 
 These variables can also be passed on the environment by prefixing them with `BV` and using underscores. For example to 

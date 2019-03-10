@@ -10,6 +10,8 @@ const DefaultApiListenAddress = "0.0.0.0:1337"
 const DefaultLogLevel = "ERROR"
 const DefaultShutdownTimeoutSeconds = 30
 const DefaultUaaConnectionTimeoutSeconds = 10
+const DefaultUaaAudienceClaim = "config_server"
+const DefaultUaaKeyRefreshIntervalSeconds = 86400
 const DefaultVaultConnectionTimeoutSeconds = 30
 const DefaultVaultMount = "secret"
 
@@ -21,20 +23,23 @@ type Configuration struct {
 	Log struct {
 		Level string `json:"level" yaml:"level"`
 	} `json:"log" yaml:"log"`
-	Vault VaultConfiguration `json:"vault" yaml:"vault"`
-	Tls   struct {
+	Tls struct {
 		Cert string `json:"cert" yaml:"key"`
 		Key  string `json:"key" yaml:"key"`
 	} `json:"tls" yaml:"tls"`
-	Uaa struct {
-		Enabled               bool   `json:"enabled" yaml:"enabled"`
-		Address               string `json:"address" yaml:"address"`
-		Timeout               int    `json:"timeout" yaml:"timeout"`
-		Ca                    string `json:"ca" yaml:"ca"`
-		SkipVerify            bool   `json:"skipverify" yaml:"skipverify"`
-		ExpectedAudienceClaim string `json:"audienceclaim"`
-	} `json:"uaa" yaml:"uaa"`
-	Redirects []RedirectBlock `json:"redirects" yaml:"redirects"`
+	Redirects []RedirectBlock    `json:"redirects" yaml:"redirects"`
+	Uaa       UaaConfiguration   `json:"uaa" yaml:"uaa"`
+	Vault     VaultConfiguration `json:"vault" yaml:"vault"`
+}
+
+type UaaConfiguration struct {
+	Enabled               bool   `json:"enabled" yaml:"enabled"`
+	Address               string `json:"address" yaml:"address"`
+	Timeout               int    `json:"timeout" yaml:"timeout"`
+	Ca                    string `json:"ca" yaml:"ca"`
+	SkipVerify            bool   `json:"skipverify" yaml:"skipverify"`
+	ExpectedAudienceClaim string `json:"audienceclaim"`
+	KeyRefreshInterval    int    `json:"keyrefreshinterval" yaml:"keyrefreshinterval"`
 }
 
 type VaultConfiguration struct {
@@ -65,6 +70,8 @@ func ParseConfig(configFilePath *string) Configuration {
 	bvConfig.Api.DrainTimeout = DefaultShutdownTimeoutSeconds
 	bvConfig.Uaa.Enabled = true
 	bvConfig.Uaa.Timeout = DefaultUaaConnectionTimeoutSeconds
+	bvConfig.Uaa.ExpectedAudienceClaim = DefaultUaaAudienceClaim
+	bvConfig.Uaa.KeyRefreshInterval = DefaultUaaKeyRefreshIntervalSeconds
 	bvConfig.Vault.Timeout = DefaultVaultConnectionTimeoutSeconds
 	bvConfig.Vault.Mount = DefaultVaultMount
 

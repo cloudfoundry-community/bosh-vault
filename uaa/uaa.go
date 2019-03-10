@@ -18,10 +18,9 @@ import (
 )
 
 const UaaAuthScheme = "bearer" // uaa doesn't use "Bearer" (the JWT default), but "bearer"
-const UaaExpectedAudience = "config_server"
-const UaaSigningKeyRefreshInterval = 24 * time.Hour // get updated key information once a day
 
 type Uaa struct {
+	Config         config.UaaConfiguration
 	Enabled        bool
 	Endpoints      *UaaEndpoints
 	httpClient     *http.Client
@@ -90,8 +89,9 @@ func GetUaa(bvConfig config.Configuration) *Uaa {
 	}
 
 	if bvConfig.Uaa.Enabled {
-		// Update the key signing information for the UAA server once a day, this will cut down on traffic to the UAA server
-		ticker := time.NewTicker(UaaSigningKeyRefreshInterval)
+		// Update the key signing information for the UAA server once a day by default,
+		// this will cut down on traffic to the UAA server
+		ticker := time.NewTicker(time.Duration(bvConfig.Uaa.KeyRefreshInterval) * time.Second)
 		go func() {
 			for _ = range ticker.C {
 				logger.Log.Debug("refreshing signing key info from UAA server")
@@ -162,7 +162,7 @@ func (uaa *Uaa) AuthMiddleware(config MiddlewareConfig) echo.MiddlewareFunc {
 func (uaa *Uaa) validateAudience(ctx echo.Context) {
 	user := ctx.Get("user").(*jwt.Token)
 	if !uaa.validateAudClaim(user.Claims.(jwt.MapClaims)["aud"].([]interface{})) {
-		errorText := fmt.Sprintf("valid JWT received but missing %s audience claim, closing connection", UaaExpectedAudience)
+		errorText := fmt.Sprintf("valid JWT received but missing %s audience claim, closing connection", uaa.Config.ExpectedAudienceClaim)
 		logger.Log.Error(errorText)
 		ctx.Error(echo.NewHTTPError(http.StatusUnauthorized, errorText))
 	}
@@ -170,7 +170,7 @@ func (uaa *Uaa) validateAudience(ctx echo.Context) {
 
 func (uaa *Uaa) validateAudClaim(claims []interface{}) bool {
 	for _, claim := range claims {
-		if strings.Contains(claim.(string), UaaExpectedAudience) {
+		if strings.Contains(claim.(string), uaa.Config.ExpectedAudienceClaim) {
 			return true
 		}
 	}
