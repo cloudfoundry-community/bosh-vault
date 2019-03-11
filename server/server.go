@@ -47,7 +47,7 @@ func ListenAndServe(bvConfig config.Configuration) {
 	// Skip if UAA isn't enabled or the request is for the health endpoint
 	e.Use(uaaClient.AuthMiddleware(uaa.MiddlewareConfig{
 		Skipper: func(c echo.Context) bool {
-			return !uaaClient.Enabled || c.Request().RequestURI == healthUri
+			return bvConfig.Debug.DisableAuth || c.Request().RequestURI == healthUri
 		},
 	}))
 

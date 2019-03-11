@@ -21,7 +21,6 @@ const UaaAuthScheme = "bearer" // uaa doesn't use "Bearer" (the JWT default), bu
 
 type Uaa struct {
 	Config         config.UaaConfiguration
-	Enabled        bool
 	Endpoints      *UaaEndpoints
 	httpClient     *http.Client
 	SigningKeyData TokenKeyResponse
@@ -80,7 +79,6 @@ func GetUaa(bvConfig config.Configuration) *Uaa {
 	}
 
 	client := &Uaa{
-		Enabled: bvConfig.Uaa.Enabled,
 		Endpoints: &UaaEndpoints{
 			CheckToken: fmt.Sprintf("%s/check_token", bvConfig.Uaa.Address),
 			TokenKey:   fmt.Sprintf("%s/token_key", bvConfig.Uaa.Address),
@@ -88,7 +86,8 @@ func GetUaa(bvConfig config.Configuration) *Uaa {
 		httpClient: customHttpClient,
 	}
 
-	if bvConfig.Uaa.Enabled {
+	// Always regularly update public key information from UAA unless auth is disabled
+	if !bvConfig.Debug.DisableAuth {
 		// Update the key signing information for the UAA server once a day by default,
 		// this will cut down on traffic to the UAA server
 		ticker := time.NewTicker(time.Duration(bvConfig.Uaa.KeyRefreshInterval) * time.Second)

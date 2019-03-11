@@ -12,6 +12,7 @@ import (
 
 func healthCheckHandler(ctx echo.Context) error {
 	context := ctx.(*BvContext)
+	// todo: Should this also verify that no DEBUG properties are set and return a different status code if so?
 	if context.Store.Healthy() {
 		return ctx.JSON(http.StatusOK, &map[string]interface{}{
 			"status":      http.StatusOK,

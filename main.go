@@ -29,8 +29,7 @@ func main() {
 	bvConfig := config.ParseConfig(configPath)
 
 	logger.Initialize(bvConfig)
-	logger.Log.Infof("Hello world. I am bosh-vault version %s", version.Version)
-	logger.Log.Debugf("Config: %+v", bvConfig)
+	logger.Log.Infof("I am bosh-vault version %s", version.Version)
 
 	server.ListenAndServe(bvConfig)
 }

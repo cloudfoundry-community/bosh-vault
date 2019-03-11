@@ -1,6 +1,13 @@
 # Bosh Vault
 This repo is an implementation of the [config server API](ttps://github.com/cloudfoundry/config-server/blob/master/docs/api.md) using Vault as a backend. It is geared towards teams that already 
-have working secrets management with Vault and want to leverage that for their Bosh infrastructure in lieu of Credhub.
+have working secrets management with Vault and want to leverage some of Vault's powerful features for their Bosh infrastructure 
+in lieu of Credhub.
+
+Specifically `bosh-vault` can be used to:
+  - Function as a simple and secure config-server implementation backed with Vault
+  - Centralize access, auditability, and management for certain credentials via upstream redirects
+  - Utilize Vault's built in dynamic secret generation engines for access control to other services like databases via dynamic redirects
+  - Aid in migration from an existing non-version KV1 Vault store to versioned secrets in KV2 via v1 redirects
 
 There is a functional [Bosh release for this project](https://github.com/Zipcar/bosh-vault-release/releases) but it can also be run as a standalone
 binary outside of Bosh.
@@ -31,7 +38,6 @@ tls:
   cert: NO_DEFAULT (Path to the cert used to secure the config server api)
   key: NO_DEFUAULT (Path to the key used to secure the config server api)
 uaa:
-  enabled: true (Whether or not the config server should require and verify UAA JWT tokens)
   address: NO_DEFAULT (The address of the UAA server to communicate with)
   timeout: 10 (How many seconds to wait before timing out connections to UAA)
   ca: NO_DEFAULT (Path to the CA to trust when connecting to UAA)

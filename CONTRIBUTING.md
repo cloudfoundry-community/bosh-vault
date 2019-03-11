@@ -51,7 +51,22 @@ director are in the `local-dev` directory.
 This repo contains the file storage backend for a development/testing Vault in `local-dev/vault/data`. There are Make
 scripts that will utilize it (`make vault` and `make unseal`) or you can use it directly. Checkout the [local Vault README
 file](https://github.com/Zipcar/bosh-vault/blob/master/local-dev/vault/README.md).
- 
+
+## Debugging Options
+For the convenience of both developers and auditors here is a `debug` configuration property available that can aid in 
+local testing and development:
+
+```
+debug:
+  disable_auth: false (set to true to disable UAA authentication middleware)
+```
+
+**NO DEBUG PROPERTIES SHOULD EVER BE SET IN A PRODUCTION DEPLOYMENT**
+
+### Disable Authentication
+For running tests or local development against a stand alone binary it can be useful to disable UAA authentication. To
+do so use the `disable_auth` debug configuration property and set it to `true`.
+
 ## Troubleshooting Dev Workflow Issues
 
 #### Certificate Problems

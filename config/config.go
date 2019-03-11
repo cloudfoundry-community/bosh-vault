@@ -30,10 +30,14 @@ type Configuration struct {
 	Redirects []RedirectBlock    `json:"redirects" yaml:"redirects"`
 	Uaa       UaaConfiguration   `json:"uaa" yaml:"uaa"`
 	Vault     VaultConfiguration `json:"vault" yaml:"vault"`
+	Debug     DebugConfiguration `json:"debug" yaml:"debug"`
+}
+
+type DebugConfiguration struct {
+	DisableAuth bool `json:"disable_auth" yaml:"disable_auth"`
 }
 
 type UaaConfiguration struct {
-	Enabled               bool   `json:"enabled" yaml:"enabled"`
 	Address               string `json:"address" yaml:"address"`
 	Timeout               int    `json:"timeout" yaml:"timeout"`
 	Ca                    string `json:"ca" yaml:"ca"`
@@ -68,7 +72,6 @@ func ParseConfig(configFilePath *string) Configuration {
 	bvConfig.Api.Address = DefaultApiListenAddress
 	bvConfig.Log.Level = DefaultLogLevel
 	bvConfig.Api.DrainTimeout = DefaultShutdownTimeoutSeconds
-	bvConfig.Uaa.Enabled = true
 	bvConfig.Uaa.Timeout = DefaultUaaConnectionTimeoutSeconds
 	bvConfig.Uaa.ExpectedAudienceClaim = DefaultUaaAudienceClaim
 	bvConfig.Uaa.KeyRefreshInterval = DefaultUaaKeyRefreshIntervalSeconds
