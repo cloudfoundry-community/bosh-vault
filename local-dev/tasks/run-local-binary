@@ -25,5 +25,6 @@ if [[ -z "${VAULT_SEALED_CHECK}" ]]; then
 fi
 
 DIRECTOR_IP=$(${BLITE} networking | grep BLITE_DIRECTOR_IP | awk '{print $2}')
+PERIODIC_TOKEN=$(VAULT_ADDR=http://127.0.0.1:8200 VAULT_SKIP_VERIFY=1 VAULT_TOKEN=s.48t1wu9P4mLBgzvA1LOMJ7AV vault token create -format=json -period=168h -policy=config-server -display-name=bosh-vault-config-server | jq -r .auth.client_token)
 
-BV_UAA_ADDRESS=https://${DIRECTOR_IP}:8443 ./bin/bosh-vault -config local-dev/config/local-dev.yml
+BV_VAULT_TOKEN=${PERIODIC_TOKEN} BV_UAA_ADDRESS=https://${DIRECTOR_IP}:8443 ./bin/bosh-vault -config local-dev/config/local-dev.yml

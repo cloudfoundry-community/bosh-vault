@@ -27,10 +27,10 @@ vault operator unseal tjx5+szUOw96N6e3Ge2ss+YPFXJVoa2XkwC7h5ZJJfY=
 vault login s.48t1wu9P4mLBgzvA1LOMJ7AV
 ```
 
-## Setup
-This Vault setup is meant to facilitate simplified development.
+When running the local bosh-vault binary via `make run` it will not use the root token above, instead it will generate a 
+periodic token attached to the config-server policy and use that.
 
-### Secret Stores
+## Secret Stores
 A KV2 mount called `config-server`
 A KV1 mount called `kv1`
 
@@ -46,8 +46,8 @@ sys/              system       system_430e496e       system endpoints used for c
 
 ```
 
-### Audit Device
-This test vault is setup to send audit data to stdout. This was done with the following command:
+## Audit Devices
+This test vault is setup to send audit data to stdout. This was configured with the following command:
 
 ```
 vault audit enable file file_path=stdout
