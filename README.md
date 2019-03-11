@@ -7,36 +7,6 @@ binary outside of Bosh.
 
 [![CircleCI](https://circleci.com/gh/Zipcar/bosh-vault/tree/master.svg?style=svg)](https://circleci.com/gh/Zipcar/bosh-vault/tree/master)
 
-# Vault Requirements
-Bosh-vault requires a Vault server with a [KV2 mount](https://www.vaultproject.io/docs/secrets/kv/kv-v2.html) available.
-```
-vault secrets enable -version=2 -path=config-server kv
-```
-
-In order for bosh-vault to work with an existing Vault server it needs a token. That token should be attached to a 
-policy that looks something like this (assuming your KV2 mount was `config-server`):
-
-```
-path "config-server/data/*" {
-  capabilities = ["create", "read", "update", "delete", "list"]
-}
-
-path "config-server/metadata/*" {
-  capabilities = ["read"]
-}
-```
-
-```
-vault policy write config-server config-server.hcl
-```
-
-You'll also need to generate a token for the config server to use that is tied to this policy, we recommend using a 
-periodic token as bosh-vault can be configured to automatically renew its token.
-
-```
-vault token create -format=json -period=168h -policy=config-server -display-name=bosh-vault-config-server
-```
-
 # Configuration
 The bosh-vault binary can be configured using a configuration file or environment variables. In the case where both are 
 provided environment variables will override configuration file settings.
@@ -72,6 +42,52 @@ uaa:
 
 These variables can also be passed on the environment by prefixing them with `BV` and using underscores. For example to 
 pass the uaa address: `BV_UAA_ADDRESS`
+
+## Configuring Vault Storage
+Bosh-vault requires a Vault server with a [KV2 mount](https://www.vaultproject.io/docs/secrets/kv/kv-v2.html) available.
+```
+vault secrets enable -version=2 -path=config-server kv
+```
+
+In order for bosh-vault to work with an existing Vault server it needs a token. That token should be attached to a 
+policy that looks something like this (assuming your KV2 mount was `config-server`):
+
+```
+path "config-server/data/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+path "config-server/metadata/*" {
+  capabilities = ["read"]
+}
+```
+
+```
+vault policy write config-server config-server.hcl
+```
+
+You'll also need to generate a token for the config server to use that is tied to this policy, we recommend using a 
+periodic token as bosh-vault can be configured to automatically renew its token.
+
+```
+vault token create -format=json -period=168h -policy=config-server -display-name=bosh-vault-config-server
+```
+
+## Configuring UAA Auth
+
+By default bosh-vault expects to receive a JWT token for authentication that has an audience claim of `config_server`.
+Here's an example operator entry to configure a client.
+
+```
+- type: replace
+  path: /instance_groups/name=bosh/jobs/name=uaa/properties/uaa/clients/director_config_server?
+  value:
+    override: true
+    authorized-grant-types: client_credentials
+    scope: ""
+    authorities: config_server.admin, uaa.resource
+    secret: some-good-password-1-2-3-4-5-6
+```
 
 # Redirect Pull Through Cache
 This implementation of config server supports a feature that is not in the API spec or CredHub implementation: redirects.
