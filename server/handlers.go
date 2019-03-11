@@ -43,6 +43,8 @@ func dataGetByNameHandler(ctx echo.Context) error {
 		return err
 	}
 
+	// Check to see if the value is a flat string value and don't nest it if that's the case (password type, for example)
+	// todo: look at checking for integer values too
 	responseData := make([]secret.Secret, 0)
 	for _, sr := range secretResponses {
 		valString, ok := sr.Value.(map[string]interface{})["value"].(string)
