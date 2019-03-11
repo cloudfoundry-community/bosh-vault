@@ -161,6 +161,7 @@ func (v *Vault) Healthy() bool {
 	healthResponse, err := v.Client.Sys().Health()
 	if err != nil {
 		logger.Log.Errorf("problem checking health of vault %s: %s", v.Config.Address, err)
+		return false
 	}
 	return healthResponse.Initialized && !healthResponse.Sealed
 }
