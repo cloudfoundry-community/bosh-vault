@@ -3,8 +3,15 @@
 This directory contains everything needed to run a Vault server in a known state for local development and experimentation. 
 It is not meant to store real credentials or be reused in any way for any reason.
 
+Because of the way the Vault file storage backend works this development Vault has its state semi-frozen using `.gitignore`.
+New entries in this Vault cause new files to be created in `local-dev/vault/data/` which by default are ignored. This is
+nice because they will not be committed to the repository, but they will persist on the local development machine even 
+through restarts. If you want/need to clear the state of this Vault server back to it's default or "frozen" state run 
+`make reset-vault` which will remove any new entries and reset any base configuration changes.
+
 ## Usage
-The best way to use this Vault is with the make file: `make local-vault`
+The best way to use this Vault is with the make file: `make vault`
+You will also have to unseal it: `make unseal`
 
 However if you're a DIY'r you will have you best results by **CDing into this directory** and then running:
 

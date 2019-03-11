@@ -26,14 +26,14 @@ director are in the `local-dev` directory.
 
 ### Option 1: All-In-One Test Deploys
  1. Run `make bosh-lite` to setup a local bosh-lite director running UAA and configured to communicate with a local bosh-vault binary
- 1. Run `make vault` (in a new terminal window) to setup a local Vault server using the preconfigured storage backend at `local-dev/vault/data`
+ 1. Run `make vault` (in a new terminal window) to setup a preconfigured local Vault server
  1. Run `make unseal` to unseal the local development Vault
  1. Run `make run` to start the config server
  1. Run `make test-deploy-nginx` to deploy NGINX that will serve a single page that is filled with plain text credentials to show they can all be generated. 
  
 ### Option 2: Just The Director
  1. Run `make bosh-lite` to setup a local bosh-lite director running UAA and configured to communicate with a local bosh-vault binary
- 1. Run `make vault` (in a new terminal window) to setup a local Vault server using the preconfigured storage backend at `local-dev/vault/data`
+ 1. Run `make vault` (in a new terminal window) to setup a preconfigured local Vault server
  1. Run `make unseal` to unseal the local development Vault
  1. Run `make run` to start the config server
  1. Run `eval $(./bin/blite env-eval)` to seed your terminal's environment with the credentials of your local bosh director so you can use standard `bosh` commands

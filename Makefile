@@ -24,6 +24,10 @@ vault: ## Runs a pre-configured local vault server for development purposes
 unseal: ## Unseal's the local vault server
 	./local-dev/tasks/unseal-local-vault
 
+.PHONY: reset-vault
+reset-vault: ## Resets the development Vault to default state
+	./local-dev/tasks/reset-vault
+
 .PHONY: run
 run: bin/blite build ## Builds and runs the binary using local-dev settings (requires running bosh-lite setup)
 	./local-dev/tasks/run-local-binary
@@ -61,7 +65,7 @@ local-certs: local-dev/certs/local-dev.crt
 local-dev/certs/local-dev.crt:
 	./local-dev/tasks/generate-local-dev-certs
 
-destroy: ## Burns down local dev environment
+destroy: reset-vault ## Burns down local dev environment
 	-rm -r ./local-dev/certs/*
 	-rm -r ./local-dev/vars/*
 	-blite destroy

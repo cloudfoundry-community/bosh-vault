@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+SCRIPT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source ${SCRIPT_PATH}/.shared
+
+cd ${SCRIPT_PATH}/../vault
+
+git reset HEAD data
+git checkout -- data
+git clean -fdx -e data/**/*
+
+echo "removed all modifications to local development Vault"
+echo
