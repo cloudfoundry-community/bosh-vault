@@ -12,7 +12,7 @@ the use of Go modules.
 
 ## Testing with a preexisting Bosh director or no Bosh director
  1. Run `make build`
- 1. Use the available configuration options to write a custom configuration file (JSON or YAML) and pass it to the built binary via the `-config` flag
+ 1. Write a custom configuration file (JSON or YAML) and pass it to the built binary via the `-config` flag
  
 ## Testing with a local Bosh director
 To simplify the developer workflow this project relies on a tool called `blite` that makes it easy to get a bosh-lite 
@@ -26,15 +26,20 @@ director are in the `local-dev` directory.
 
 ### Option 1: All-In-One Test Deploys
  1. Run `make bosh-lite` to setup a local bosh-lite director running UAA and configured to communicate with a local bosh-vault binary
+ 1. Run `make vault` (in a new terminal window) to setup a local Vault server using the preconfigured storage backend at `local-dev/vault/data`
+ 1. Run `make unseal` to unseal the local development Vault
  1. Run `make run` to start the config server
  1. Run `make test-deploy-nginx` to deploy NGINX that will serve a single page that is filled with plain text credentials to show they can all be generated. 
  
 ### Option 2: Just The Director
  1. Run `make bosh-lite` to setup a local bosh-lite director running UAA and configured to communicate with a local bosh-vault binary
+ 1. Run `make vault` (in a new terminal window) to setup a local Vault server using the preconfigured storage backend at `local-dev/vault/data`
+ 1. Run `make unseal` to unseal the local development Vault
  1. Run `make run` to start the config server
  1. Run `eval $(./bin/blite env-eval)` to seed your terminal's environment with the credentials of your local bosh director so you can use standard `bosh` commands
  
 ### Option 3: Blite/bosh-vault Power User
+ 1. Make sure a Vault server is running and configured to use KV2
  1. Make sure the certs you want to use are in `local-dev/certs` (the next step will generate default certs if they don't exist)
  1. Run the compiled binary using your desired configuration (or the default in `local-dev/config`)
  1. Run `blite create` passing in operator and vars files using the `BLITE_OPS_FILE_GLOB` and `BLITE_VARS_FILE_GLOB` environment variables, at a minimum you'll need what is captured in `local-dev/operators` and `local-dev/vars`. Alternatively just add operator/vars files directly to those directories using the same naming convention.
@@ -42,7 +47,12 @@ director are in the `local-dev` directory.
  1. Use bosh to set a custom cloud config (or use `blite cloud-config` for default settings)
  1. Use as a normal bosh director you power user you!
  
-### Troubleshooting Dev Workflow Issues
+## Local Vault
+This repo contains the file storage backend for a development/testing Vault in `local-dev/vault/data`. There are Make
+scripts that will utilize it (`make vault` and `make unseal`) or you can use it directly. Checkout the [local Vault README
+file](https://github.com/Zipcar/bosh-vault/blob/master/local-dev/vault/README.md).
+ 
+## Troubleshooting Dev Workflow Issues
 
 #### Certificate Problems
 Certificate problems are the most common cause of local dev frustration. Bosh requires config servers use TLS; to try

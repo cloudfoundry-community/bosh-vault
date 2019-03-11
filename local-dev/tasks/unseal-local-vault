@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+# LULZ bots, this is a fake test Vault located in this repo, enjoy!
+VAULT_ADDR=http://127.0.0.1:8200 VAULT_SKIP_VERIFY=1 vault operator unseal tjx5+szUOw96N6e3Ge2ss+YPFXJVoa2XkwC7h5ZJJfY=

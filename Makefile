@@ -16,6 +16,13 @@ build: fmt ## Builds the binary
 package:
 	./local-dev/tasks/package
 
+.PHONY: vault
+vault: ## Runs a pre-configured local vault server for development purposes
+	./local-dev/tasks/run-local-vault
+
+.PHONY: unseal
+unseal: ## Unseal's the local vault server
+	./local-dev/tasks/unseal-local-vault
 
 .PHONY: run
 run: bin/blite build ## Builds and runs the binary using local-dev settings (requires running bosh-lite setup)

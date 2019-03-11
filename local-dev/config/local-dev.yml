@@ -11,14 +11,5 @@ uaa:
   ca: "./local-dev/certs/local-dev-director-ca.crt"
 vault: &vault
   address: "http://127.0.0.1:8200"
-redirects:
-  - type: "upstream"
-    rules: []
-    vault: *vault
-#  - type: "dynamic"
-#    rules: []
-#    vault: *vault
-#  - type: "v1"
-#    rules: []
-#    vault: *vault
-
+  token: "s.48t1wu9P4mLBgzvA1LOMJ7AV"
+  mount: "config-server"

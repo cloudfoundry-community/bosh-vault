@@ -6,22 +6,24 @@ source ${SCRIPT_PATH}/.shared
 
 BLITE=${SCRIPT_PATH}/../../bin/blite
 
-if [ -z "$(${BLITE} status | grep running)" ]; then
+if [[ -z "$(${BLITE} status | grep running)" ]]; then
   echo "There doesn't seem to be a blite director running. Run make bosh-lite before running this command."
   echo "Alternatively run the binary yourself with a custom configuration. This local-dev setup is meant to be used with bosh-lite."
   exit 1
 fi
 
-# Because this is in dev-mode we'll loose the entire Vault every time we close this script.
-# Todo: Maybe change this in future to be a real vault that persists to a file... or don't? meh.
-vault server -dev > /dev/null 2>&1 &
-# A sleep to make sure the Vault is unsealed and we can read the token from the filesystem
-sleep 2
-VAULT_TOKEN=$(cat ~/.vault-token)
+VAULT_UP_CHECK=$(VAULT_ADDR=http://127.0.0.1:8200 VAULT_SKIP_VERIFY=1 vault status 2>&1| grep "Error checking")
+if [[ ! -z "${VAULT_UP_CHECK}" ]]; then
+  echo "Looks like your local Vault server isn't running! Have you run make vault?"
+  exit 1
+fi
+
+VAULT_SEALED_CHECK=$(VAULT_ADDR=http://127.0.0.1:8200 VAULT_SKIP_VERIFY=1 vault status | grep Sealed | grep false)
+if [[ -z "${VAULT_SEALED_CHECK}" ]]; then
+  echo "Looks like your local Vault server is sealed! Have you run make unseal?"
+  exit 1
+fi
 
 DIRECTOR_IP=$(${BLITE} networking | grep BLITE_DIRECTOR_IP | awk '{print $2}')
 
-BV_VAULT_TOKEN=${VAULT_TOKEN} BV_UAA_ADDRESS=https://${DIRECTOR_IP}:8443 ./bin/bosh-vault -config local-dev/config/local-dev.yml
-
-# Make sure backgrounded processes (dev vault) are killed
-trap 'kill $(jobs -p)' EXIT
+BV_UAA_ADDRESS=https://${DIRECTOR_IP}:8443 ./bin/bosh-vault -config local-dev/config/local-dev.yml
