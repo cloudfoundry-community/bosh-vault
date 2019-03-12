@@ -11,6 +11,7 @@ import (
 	"github.com/zipcar/bosh-vault/store"
 	"github.com/zipcar/bosh-vault/uaa"
 	"golang.org/x/net/context"
+	"net/http"
 	"os"
 	"os/signal"
 	"time"
@@ -56,6 +57,10 @@ func ListenAndServe(bvConfig config.Configuration) {
 	// middleware function that sets a custom context exposing our configuration and logger to handler functions
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			// return 500 if the store isn't healthy
+			if !storeClient.Healthy() {
+				return echo.NewHTTPError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			}
 			configContext := &BvContext{
 				Context: c,
 				Config:  bvConfig,
