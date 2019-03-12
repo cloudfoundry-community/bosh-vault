@@ -59,6 +59,7 @@ local testing and development:
 ```
 debug:
   disable_auth: false (set to true to disable UAA authentication middleware)
+  disable_tls: false (set to true to disable TLS for the config-server API)
 ```
 
 **NO DEBUG PROPERTIES SHOULD EVER BE SET IN A PRODUCTION DEPLOYMENT**
@@ -66,6 +67,10 @@ debug:
 ### Disable Authentication
 For running tests or local development against a stand alone binary it can be useful to disable UAA authentication. To
 do so use the `disable_auth` debug configuration property and set it to `true`.
+
+### Disable TLS
+Disable TLS f or simplified running of automated integration or load tests against the binary. Bosh will not communicate 
+with a config-server that doesn't use TLS.
 
 ## Troubleshooting Dev Workflow Issues
 

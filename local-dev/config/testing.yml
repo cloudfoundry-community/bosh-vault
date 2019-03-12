@@ -11,3 +11,4 @@ vault: &vault
   token: "s.48t1wu9P4mLBgzvA1LOMJ7AV"
 debug:
   disable_auth: true
+  disable_tls: true

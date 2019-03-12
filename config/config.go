@@ -35,6 +35,7 @@ type Configuration struct {
 
 type DebugConfiguration struct {
 	DisableAuth bool `json:"disable_auth" yaml:"disable_auth"`
+	DisableTls  bool `json:"disable_tls" yaml:"disable_tls"`
 }
 
 type UaaConfiguration struct {

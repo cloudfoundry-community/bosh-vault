@@ -79,8 +79,15 @@ func ListenAndServe(bvConfig config.Configuration) {
 	// Start server
 	go func() {
 		logger.Log.Infof("starting bosh-vault api server at %s", bvConfig.Api.Address)
-		if err := e.StartTLS(bvConfig.Api.Address, bvConfig.Tls.Cert, bvConfig.Tls.Key); err != nil {
-			logger.Log.Info("shutting down the bosh-vault api server")
+		if bvConfig.Debug.DisableTls {
+			logger.Log.Error("!!!!!!!!!! DEBUG MODE ACTIVE TLS DISABLED !!!!!!!!!")
+			if err := e.Start(bvConfig.Api.Address); err != nil {
+				logger.Log.Info("shutting down the bosh-vault api server")
+			}
+		} else {
+			if err := e.StartTLS(bvConfig.Api.Address, bvConfig.Tls.Cert, bvConfig.Tls.Key); err != nil {
+				logger.Log.Info("shutting down the bosh-vault api server")
+			}
 		}
 	}()
 
