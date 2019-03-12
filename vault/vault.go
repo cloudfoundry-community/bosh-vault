@@ -142,7 +142,7 @@ func (v *Vault) GetMetadata(name string) (map[string]interface{}, error) {
 	}
 
 	if metadata == nil {
-		return nil, errors.New(fmt.Sprintf("no metadata available for %s", name))
+		return nil, errors.New("secret not found")
 	}
 
 	return metadata.Data, nil
