@@ -47,11 +47,14 @@ func dataGetByNameHandler(ctx echo.Context) error {
 	// todo: look at checking for integer values too
 	responseData := make([]secret.Secret, 0)
 	for _, sr := range secretResponses {
-		valString, ok := sr.Value.(map[string]interface{})["value"].(string)
-		if ok {
-			sr.Value = valString
+		// This will filter out secret versions that previously existed but are now deleted in Vault and this have no value
+		if sr.Value != nil {
+			valString, ok := sr.Value.(map[string]interface{})["value"].(string)
+			if ok {
+				sr.Value = valString
+			}
+			responseData = append(responseData, sr)
 		}
-		responseData = append(responseData, sr)
 	}
 
 	return ctx.JSON(http.StatusOK, struct {
@@ -75,9 +78,13 @@ func dataGetByIdHandler(ctx echo.Context) error {
 		ctx.Error(echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("problem fetching secret by id: %s %s", id, err)))
 		return err
 	}
-	valString, ok := vaultSecretResponse.Value.(map[string]interface{})["value"].(string)
-	if ok {
-		vaultSecretResponse.Value = valString
+	// If this particular secret version has been deleted don't try to cast the value, allow it to be "null"
+	// Alternatively we could return a 404, this approach shows that at least at one point this ID was valid
+	if vaultSecretResponse.Value != nil {
+		valString, ok := vaultSecretResponse.Value.(map[string]interface{})["value"].(string)
+		if ok {
+			vaultSecretResponse.Value = valString
+		}
 	}
 	return ctx.JSON(http.StatusOK, vaultSecretResponse)
 }

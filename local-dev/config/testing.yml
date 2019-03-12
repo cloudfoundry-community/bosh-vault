@@ -6,6 +6,7 @@ log:
 vault: &vault
   address: "http://127.0.0.1:8200"
   token: "s.48t1wu9P4mLBgzvA1LOMJ7AV"
+  mount: "config-server"
 debug:
   disable_auth: true
   disable_tls: true
