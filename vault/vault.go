@@ -122,6 +122,9 @@ func (v *Vault) Get(name string, params map[string]string) (map[string]interface
 	if err != nil {
 		return nil, err
 	}
+	if vaultReply == nil {
+		return nil, errors.New("secret not found")
+	}
 
 	return vaultReply.Data, nil
 }
