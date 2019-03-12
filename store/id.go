@@ -39,6 +39,7 @@ func DecodeId(id string) (VersionedSecretMetaData, error) {
 	err = json.Unmarshal(recordBytes, &record)
 	if err != nil {
 		logger.Log.Errorf("problem unmarshaling id bytes into versioned secret meta data: %s", id)
+		return record, err
 	}
 	return record, nil
 }
