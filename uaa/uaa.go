@@ -86,21 +86,18 @@ func GetUaa(bvConfig config.Configuration) *Uaa {
 		httpClient: customHttpClient,
 	}
 
-	// Always regularly update public key information from UAA unless auth is disabled
-	if !bvConfig.Debug.DisableAuth {
-		// Update the key signing information for the UAA server once a day by default,
-		// this will cut down on traffic to the UAA server
-		ticker := time.NewTicker(time.Duration(bvConfig.Uaa.KeyRefreshInterval) * time.Second)
-		go func() {
-			for _ = range ticker.C {
-				logger.Log.Debug("refreshing signing key info from UAA server")
-				err := client.updateSigningKeyData()
-				if err != nil {
-					logger.Log.Error("error getting signing key info from UAA server, perhaps it's down? continuing to use cached signing key data...")
-				}
+	// Update the key signing information for the UAA server once a day by default,
+	// this will cut down on traffic to the UAA server
+	ticker := time.NewTicker(time.Duration(bvConfig.Uaa.KeyRefreshInterval) * time.Second)
+	go func() {
+		for _ = range ticker.C {
+			logger.Log.Debug("refreshing signing key info from UAA server")
+			err := client.updateSigningKeyData()
+			if err != nil {
+				logger.Log.Error("error getting signing key info from UAA server, perhaps it's down? continuing to use cached signing key data...")
 			}
-		}()
-	}
+		}
+	}()
 
 	return client
 }

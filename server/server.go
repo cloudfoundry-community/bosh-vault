@@ -23,7 +23,6 @@ type BvContext struct {
 	echo.Context
 	Config config.Configuration
 	Log    *logrus.Logger
-	Uaa    *uaa.Uaa
 	Store  secret.Store
 }
 
@@ -39,26 +38,28 @@ func ListenAndServe(bvConfig config.Configuration) {
 	e.HideBanner = true
 	e.HidePort = true
 
-	uaaClient := uaa.GetUaa(bvConfig)
 	storeClient := store.GetStore(bvConfig)
 
 	// Support UAA Authorization if enabled (and broad authentication for now too)
 	// Will allow connections if JWT contains the expected audience claim
 	// Skip if UAA isn't enabled or the request is for the health endpoint
-	e.Use(uaaClient.AuthMiddleware(uaa.MiddlewareConfig{
-		Skipper: func(c echo.Context) bool {
-			return bvConfig.Debug.DisableAuth || c.Request().RequestURI == healthUri
-		},
-	}))
+	if !bvConfig.Debug.DisableAuth {
+		uaaClient := uaa.GetUaa(bvConfig)
 
-	// middleware function that sets a custom context exposing our configuration, logger, and a UAA client to handler functions
+		e.Use(uaaClient.AuthMiddleware(uaa.MiddlewareConfig{
+			Skipper: func(c echo.Context) bool {
+				return c.Request().RequestURI == healthUri
+			},
+		}))
+	}
+
+	// middleware function that sets a custom context exposing our configuration and logger to handler functions
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			configContext := &BvContext{
 				Context: c,
 				Config:  bvConfig,
 				Log:     logger.Log,
-				Uaa:     uaaClient,
 				Store:   storeClient,
 			}
 			return next(configContext)
