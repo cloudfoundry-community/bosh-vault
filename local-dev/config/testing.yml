@@ -3,9 +3,6 @@ api:
   draintimeout: 10
 log:
   level: "DEBUG"
-tls:
-  cert: "./local-dev/certs/local-dev.crt"
-  key: "./local-dev/certs/local-dev.key"
 vault: &vault
   address: "http://127.0.0.1:8200"
   token: "s.48t1wu9P4mLBgzvA1LOMJ7AV"

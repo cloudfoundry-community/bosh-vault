@@ -29,7 +29,7 @@ type BvContext struct {
 func ListenAndServe(bvConfig config.Configuration) {
 
 	// config server ALWAYS needs TLS
-	if bvConfig.Tls.Cert == "" || bvConfig.Tls.Key == "" {
+	if (bvConfig.Tls.Cert == "" || bvConfig.Tls.Key == "") && !bvConfig.Debug.DisableTls {
 		logger.Log.Fatal("unable to start bosh-vault without tls_cert_path and tls_key_path being set")
 	}
 
