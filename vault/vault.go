@@ -154,7 +154,7 @@ func (v *Vault) Set(name string, value interface{}) (map[string]interface{}, err
 		"data":    value,
 		"options": map[string]interface{}{},
 	})
-	if err != nil {
+	if err != nil || response == nil {
 		return nil, err
 	}
 	return response.Data, nil

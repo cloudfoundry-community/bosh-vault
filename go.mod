@@ -68,7 +68,7 @@ require (
 	github.com/hashicorp/vault-plugin-secrets-azure v0.0.0-20181207232500-0087bdef705a // indirect
 	github.com/hashicorp/vault-plugin-secrets-gcp v0.0.0-20180921173200-d6445459e80c // indirect
 	github.com/hashicorp/vault-plugin-secrets-gcpkms v0.0.0-20190116164938-d6b25b0b4a39 // indirect
-	github.com/hashicorp/vault-plugin-secrets-kv v0.0.0-20190115203747-edbfe287c5d9 // indirect
+	github.com/hashicorp/vault-plugin-secrets-kv v0.0.0-20190115203747-edbfe287c5d9
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/influxdata/influxdb v1.7.4 // indirect
 	github.com/influxdata/platform v0.0.0-20190117200541-d500d3cf5589 // indirect
@@ -88,7 +88,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/onsi/ginkgo v1.8.0
-	github.com/onsi/gomega v1.4.3
+	github.com/onsi/gomega v1.5.0
 	github.com/ory-am/common v0.4.0 // indirect
 	github.com/ory/dockertest v3.3.4+incompatible // indirect
 	github.com/pborman/uuid v1.2.0 // indirect
@@ -128,3 +128,5 @@ require (
 	layeh.com/radius v0.0.0-20190118135028-0f678f039617 // indirect
 	sigs.k8s.io/yaml v1.1.0 // indirect
 )
+
+replace github.com/SermoDigital/jose => github.com/SermoDigital/jose v0.9.2-0.20180104203859-803625baeddc

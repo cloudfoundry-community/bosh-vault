@@ -3,19 +3,11 @@ package store_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/sirupsen/logrus"
-	"github.com/zipcar/bosh-vault/logger"
 	"github.com/zipcar/bosh-vault/store"
 	"github.com/zipcar/bosh-vault/store/storefakes"
-	"io/ioutil"
 )
 
 var _ = Describe("Store ID", func() {
-	BeforeSuite(func() {
-		logger.Log = logrus.New()
-		logger.Log.Out = ioutil.Discard
-	})
-
 	Describe("Id Encoding", func() {
 		Context("valid secret metadata", func() {
 			It("properly encodes metadata to id", func() {
