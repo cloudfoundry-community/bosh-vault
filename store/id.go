@@ -33,7 +33,7 @@ func DecodeId(id string) (VersionedSecretMetaData, error) {
 	var record VersionedSecretMetaData
 	recordBytes, err := base64.URLEncoding.DecodeString(id)
 	if err != nil {
-		logger.Log.Errorf("problem decoding id: %s", id)
+		logger.Log.Errorf("problem decoding id: %s %s", id, err)
 		return record, err
 	}
 	err = json.Unmarshal(recordBytes, &record)

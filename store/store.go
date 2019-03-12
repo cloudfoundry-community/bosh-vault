@@ -87,7 +87,7 @@ func getById(v *vault.Vault, id string) (secret.Secret, error) {
 	var response secret.Secret
 	decodedId, err := DecodeId(id)
 	if err != nil {
-		return response, err
+		return response, errors.New("malformed or invalid id")
 	}
 
 	val, err := v.Get(decodedId.Name, map[string]string{

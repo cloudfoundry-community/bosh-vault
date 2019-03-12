@@ -2,6 +2,7 @@ package store
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/zipcar/bosh-vault/logger"
 	"github.com/zipcar/bosh-vault/secret"
 	"github.com/zipcar/bosh-vault/vault"
@@ -39,7 +40,7 @@ func (rs *RedirectStore) refRule(ref string) (bool, Rule) {
 func (rs *RedirectStore) normalizeSecret(s secret.Secret, originalName string) (secret.Secret, error) {
 	decodedSecretId, err := DecodeId(s.Id)
 	if err != nil {
-		return s, err
+		return s, errors.New("malformed or invalid id")
 	}
 
 	normalizedId, err := EncodeId(VersionedSecretMetaData{
@@ -127,7 +128,7 @@ func (rs *RedirectStore) GetById(id string) (s secret.Secret, err error) {
 
 	decodedId, err := DecodeId(id)
 	if err != nil {
-		return secret.Secret{}, err
+		return secret.Secret{}, errors.New("malformed or invalid id")
 	}
 
 	redirected, rule := rs.refRule(decodedId.Name)
