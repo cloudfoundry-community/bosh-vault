@@ -9,15 +9,17 @@ const PasswordType = "password"
 const PasswordDefaultLength = 30
 
 type PasswordRequest struct {
-	Name       string `json:"name"`
-	Type       string `json:"type"`
-	Parameters struct {
-		Length         int  `json:"length"`
-		ExcludeUpper   bool `json:"exclude_upper"`
-		ExcludeLower   bool `json:"exclude_lower"`
-		ExcludeNumber  bool `json:"exclude_number"`
-		IncludeSpecial bool `json:"include_special"`
-	} `json:"parameters"`
+	Name       string         `json:"name"`
+	Type       string         `json:"type"`
+	Parameters PasswordParams `json:"parameters"`
+}
+
+type PasswordParams struct {
+	Length         int  `json:"length"`
+	ExcludeUpper   bool `json:"exclude_upper"`
+	ExcludeLower   bool `json:"exclude_lower"`
+	ExcludeNumber  bool `json:"exclude_number"`
+	IncludeSpecial bool `json:"include_special"`
 }
 
 type PasswordRecord string
