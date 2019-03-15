@@ -17,21 +17,30 @@ import (
 )
 
 const CertificateType = "certificate"
-const CertificateDefaultTtl = 365 * 24 * time.Hour
+const CertificateDefaultTtl = 365
 const CertificateDefaultOrg = "bosh vault"
 const CertificateDefaultCountry = "USA"
-const CertificateDefaultRsaKeyBits = 3072
+const CertificateDefaultRsaKeyBits = 2048
 
 type CertificateRequest struct {
 	Name       string `json:"name"`
 	Type       string `json:"type"`
 	Parameters struct {
-		CommonName       string   `json:"common_name"`
-		IsCa             bool     `json:"is_ca,omitempty"`
-		Ca               string   `json:"ca,omitempty"`
-		AlternativeNames []string `json:"alternative_names,omitempty"`
-		ExtendedKeyUsage []string `json:"extended_key_usage,omitempty"`
-	}
+		CommonName         string   `json:"common_name"`
+		IsCa               bool     `json:"is_ca,omitempty"`
+		Ca                 string   `json:"ca,omitempty"`
+		AlternativeNames   []string `json:"alternative_names,omitempty"`
+		ExtendedKeyUsage   []string `json:"extended_key_usage,omitempty"`
+		Organization       string   `json:"organization"`
+		OrganizationalUnit string   `json:"organizational_unit"`
+		Locality           string   `json:"locality"`
+		State              string   `json:"state"`
+		Country            string   `json:"country"`
+		KeyUsage           []string `json:"key_usage"`
+		KeyLength          int      `json:"key_length"`
+		Duration           int      `json:"duration"`
+		SelfSign           bool     `json:"self_sign"`
+	} `json:"parameters"`
 }
 
 type CertificateResponse struct {
@@ -62,7 +71,7 @@ func (r CertificateRequest) IsRootCaRequest() bool {
 	return r.Type == CertificateType &&
 		r.Parameters.IsCa &&
 		r.Parameters.CommonName != "" &&
-		r.Parameters.Ca == "" &&
+		(r.Parameters.Ca == "" || r.Parameters.SelfSign) &&
 		len(r.Parameters.AlternativeNames) == 0
 }
 
@@ -70,14 +79,14 @@ func (r CertificateRequest) IsIntermediateCaRequest() bool {
 	return r.Type == CertificateType &&
 		r.Parameters.IsCa &&
 		r.Parameters.CommonName != "" &&
-		r.Parameters.Ca != "" &&
+		(r.Parameters.Ca != "" || r.Parameters.SelfSign) &&
 		len(r.Parameters.AlternativeNames) == 0
 }
 
 func (r CertificateRequest) IsRegularCertificateRequest() bool {
 	return r.Type == CertificateType &&
 		!r.Parameters.IsCa &&
-		r.Parameters.Ca != "" &&
+		(r.Parameters.Ca != "" || r.Parameters.SelfSign) &&
 		r.Parameters.CommonName != ""
 }
 
@@ -108,9 +117,14 @@ func (r *CertificateRequest) Generate(secretStore secret.Store) (CredentialRecor
 
 	switch {
 	case r.IsRegularCertificateRequest() || r.IsIntermediateCaRequest():
-		rootCaCert, rootCaKey, err = getRootCaAndKeyByName(r.Parameters.Ca, secretStore)
-		if err != nil {
-			return nil, err
+		if r.Parameters.SelfSign {
+			rootCaKey = nil
+			rootCaCert = nil
+		} else {
+			rootCaCert, rootCaKey, err = getRootCaAndKeyByName(r.Parameters.Ca, secretStore)
+			if err != nil {
+				return nil, err
+			}
 		}
 		fallthrough
 	case r.IsRegularCertificateRequest():
@@ -124,8 +138,8 @@ func (r *CertificateRequest) Generate(secretStore secret.Store) (CredentialRecor
 	}
 }
 
-func getRsaKey() (*rsa.PrivateKey, error) {
-	privateKey, err := rsa.GenerateKey(rand.Reader, CertificateDefaultRsaKeyBits)
+func getRsaKey(keyLength int) (*rsa.PrivateKey, error) {
+	privateKey, err := rsa.GenerateKey(rand.Reader, keyLength)
 	if err != nil {
 		return &rsa.PrivateKey{}, errors.New(fmt.Sprintf("Problem generating RSA keypair for cert: %s", err))
 	}
@@ -134,7 +148,11 @@ func getRsaKey() (*rsa.PrivateKey, error) {
 
 func newX509CertAndKey(cr *CertificateRequest) (x509.Certificate, *rsa.PrivateKey, error) {
 
-	privateKey, err := getRsaKey()
+	if cr.Parameters.KeyLength == 0 {
+		cr.Parameters.KeyLength = CertificateDefaultRsaKeyBits
+	}
+
+	privateKey, err := getRsaKey(cr.Parameters.KeyLength)
 	if err != nil {
 		return x509.Certificate{}, privateKey, err
 	}
@@ -145,24 +163,89 @@ func newX509CertAndKey(cr *CertificateRequest) (x509.Certificate, *rsa.PrivateKe
 	}
 
 	now := time.Now()
-	notAfter := now.Add(CertificateDefaultTtl)
+
+	if cr.Parameters.Duration == 0 {
+		cr.Parameters.Duration = CertificateDefaultTtl
+	}
+
+	notAfter := now.Add(time.Duration(cr.Parameters.Duration*24) * time.Hour)
 
 	subjectKeyHash := sha1.New()
 	subjectKeyHash.Write(privateKey.N.Bytes())
 	subjectKeyId := subjectKeyHash.Sum(nil)
 
+	if cr.Parameters.Organization == "" {
+		cr.Parameters.Organization = CertificateDefaultOrg
+	}
+
+	if cr.Parameters.Country == "" {
+		cr.Parameters.Country = CertificateDefaultCountry
+	}
+
 	cert := x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
-			Country:      []string{CertificateDefaultCountry},
-			Organization: []string{CertificateDefaultOrg},
-			CommonName:   cr.Parameters.CommonName,
+			Country:            []string{cr.Parameters.Country},
+			Organization:       []string{cr.Parameters.Organization},
+			OrganizationalUnit: []string{cr.Parameters.OrganizationalUnit},
+			Locality:           []string{cr.Parameters.Locality},
+			Province:           []string{cr.Parameters.State},
+			CommonName:         cr.Parameters.CommonName,
 		},
 		NotBefore:             now,
 		NotAfter:              notAfter,
 		BasicConstraintsValid: true,
 		IsCA:                  cr.Parameters.IsCa,
 		SubjectKeyId:          subjectKeyId,
+	}
+
+	if cr.Parameters.SelfSign {
+		cert.IsCA = true
+		cert.KeyUsage = x509.KeyUsageCertSign | x509.KeyUsageCRLSign
+	}
+
+	for _, keyUsage := range cr.Parameters.KeyUsage {
+		switch keyUsage {
+		case "digital_signature":
+			cert.KeyUsage |= x509.KeyUsageDigitalSignature
+		case "key_encipherment":
+			cert.KeyUsage |= x509.KeyUsageKeyEncipherment
+		case "non_repudiation":
+			cert.KeyUsage |= x509.KeyUsageContentCommitment
+		case "data_encipherment":
+			cert.KeyUsage |= x509.KeyUsageDataEncipherment
+		case "key_agreement":
+			cert.KeyUsage |= x509.KeyUsageKeyAgreement
+		case "key_cert_sign":
+			if cr.IsIntermediateCaRequest() || cr.IsRootCaRequest() {
+				cert.KeyUsage |= x509.KeyUsageCertSign
+			}
+		case "crl_sign":
+			cert.KeyUsage |= x509.KeyUsageCRLSign
+		case "encipher_only":
+			cert.KeyUsage |= x509.KeyUsageEncipherOnly
+		case "decipher_only":
+			cert.KeyUsage |= x509.KeyUsageDecipherOnly
+		default:
+			logger.Log.Errorf("Unsupported extended key usage: %s, ignoring", keyUsage)
+		}
+	}
+
+	for _, extUsage := range cr.Parameters.ExtendedKeyUsage {
+		switch extUsage {
+		case "client_auth":
+			cert.ExtKeyUsage = append(cert.ExtKeyUsage, x509.ExtKeyUsageClientAuth)
+		case "server_auth":
+			cert.ExtKeyUsage = append(cert.ExtKeyUsage, x509.ExtKeyUsageServerAuth)
+		case "code_signing":
+			cert.ExtKeyUsage = append(cert.ExtKeyUsage, x509.ExtKeyUsageCodeSigning)
+		case "email_protection":
+			cert.ExtKeyUsage = append(cert.ExtKeyUsage, x509.ExtKeyUsageEmailProtection)
+		case "timestamping":
+			cert.ExtKeyUsage = append(cert.ExtKeyUsage, x509.ExtKeyUsageTimeStamping)
+		default:
+			logger.Log.Errorf("Unsupported extended key usage: %s, ignoring", extUsage)
+		}
 	}
 
 	return cert, privateKey, nil
@@ -223,24 +306,22 @@ func (r *CertificateRequest) GenerateRegularCertificate(rootCaCert *x509.Certifi
 		return nil, err
 	}
 
-	certTemplate.KeyUsage = x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature
-	certTemplate.AuthorityKeyId = rootCaCert.SubjectKeyId
+	// Default key usage for standard TLS certificate
+	if len(r.Parameters.KeyUsage) == 0 {
+		certTemplate.KeyUsage = x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature
+	}
 
-	// Default key usage for "regular" TLS cert is "server_auth"
+	// Default key usage for "regular" MTLS cert is "server_auth"
 	if len(r.Parameters.ExtendedKeyUsage) == 0 {
-		r.Parameters.ExtendedKeyUsage = append(r.Parameters.ExtendedKeyUsage, "server_auth")
+		certTemplate.ExtKeyUsage = append(certTemplate.ExtKeyUsage, x509.ExtKeyUsageServerAuth)
 	}
 
-	for _, extUsage := range r.Parameters.ExtendedKeyUsage {
-		switch extUsage {
-		case "client_auth":
-			certTemplate.ExtKeyUsage = append(certTemplate.ExtKeyUsage, x509.ExtKeyUsageClientAuth)
-		case "server_auth":
-			certTemplate.ExtKeyUsage = append(certTemplate.ExtKeyUsage, x509.ExtKeyUsageServerAuth)
-		default:
-			logger.Log.Errorf("Unsupported extended key usage: %s, ignoring", extUsage)
-		}
+	if r.Parameters.SelfSign {
+		rootCaCert = &certTemplate
+		rootCaKey = privateKey
 	}
+
+	certTemplate.AuthorityKeyId = rootCaCert.SubjectKeyId
 
 	for _, altName := range r.Parameters.AlternativeNames {
 		altNameIp := net.ParseIP(altName)
@@ -266,7 +347,10 @@ func (r *CertificateRequest) GenerateRootCertificate() (CredentialRecordInterfac
 		return nil, err
 	}
 
-	certTemplate.KeyUsage = x509.KeyUsageCertSign | x509.KeyUsageCRLSign
+	// Default key usage for root TLS certificate
+	if len(r.Parameters.KeyUsage) == 0 {
+		certTemplate.KeyUsage = x509.KeyUsageCertSign | x509.KeyUsageCRLSign
+	}
 
 	certTemplate.AuthorityKeyId = certTemplate.SubjectKeyId
 
@@ -285,7 +369,16 @@ func (r *CertificateRequest) GenerateIntermediateCertificate(rootCaCert *x509.Ce
 		return nil, err
 	}
 
-	certTemplate.KeyUsage = x509.KeyUsageCertSign | x509.KeyUsageCRLSign
+	// default key usage for intermediate cert
+	if len(r.Parameters.KeyUsage) == 0 {
+		certTemplate.KeyUsage = x509.KeyUsageCertSign | x509.KeyUsageCRLSign
+	}
+
+	if r.Parameters.SelfSign {
+		rootCaCert = &certTemplate
+		rootCaKey = privateKey
+	}
+
 	certTemplate.AuthorityKeyId = rootCaCert.SubjectKeyId
 
 	rawCert, err := x509.CreateCertificate(rand.Reader, &certTemplate, rootCaCert, &privateKey.PublicKey, rootCaKey)
