@@ -4,7 +4,6 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
-	"fmt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/zipcar/bosh-vault/store"
@@ -101,7 +100,6 @@ var _ = Describe("Certificates", func() {
 				caBlock, _ := pem.Decode([]byte(intCaRecord.Certificate))
 				intermediateCertificate, err := x509.ParseCertificate(caBlock.Bytes)
 				Expect(intermediateCertificate.IsCA).To(BeTrue())
-				fmt.Printf("%#v", intermediateCertificate.KeyUsage)
 				Expect(intermediateCertificate.KeyUsage).To(Equal(x509.KeyUsageCertSign | x509.KeyUsageCRLSign))
 			})
 		})
