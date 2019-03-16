@@ -23,24 +23,26 @@ const CertificateDefaultCountry = "USA"
 const CertificateDefaultRsaKeyBits = 2048
 
 type CertificateRequest struct {
-	Name       string `json:"name"`
-	Type       string `json:"type"`
-	Parameters struct {
-		CommonName         string   `json:"common_name"`
-		IsCa               bool     `json:"is_ca,omitempty"`
-		Ca                 string   `json:"ca,omitempty"`
-		AlternativeNames   []string `json:"alternative_names,omitempty"`
-		ExtendedKeyUsage   []string `json:"extended_key_usage,omitempty"`
-		Organization       string   `json:"organization"`
-		OrganizationalUnit string   `json:"organizational_unit"`
-		Locality           string   `json:"locality"`
-		State              string   `json:"state"`
-		Country            string   `json:"country"`
-		KeyUsage           []string `json:"key_usage"`
-		KeyLength          int      `json:"key_length"`
-		Duration           int      `json:"duration"`
-		SelfSign           bool     `json:"self_sign"`
-	} `json:"parameters"`
+	Name       string            `json:"name"`
+	Type       string            `json:"type"`
+	Parameters CertificateParams `json:"parameters"`
+}
+
+type CertificateParams struct {
+	CommonName         string   `json:"common_name"`
+	IsCa               bool     `json:"is_ca,omitempty"`
+	Ca                 string   `json:"ca,omitempty"`
+	AlternativeNames   []string `json:"alternative_names,omitempty"`
+	ExtendedKeyUsage   []string `json:"extended_key_usage,omitempty"`
+	Organization       string   `json:"organization"`
+	OrganizationalUnit string   `json:"organizational_unit"`
+	Locality           string   `json:"locality"`
+	State              string   `json:"state"`
+	Country            string   `json:"country"`
+	KeyUsage           []string `json:"key_usage"`
+	KeyLength          int      `json:"key_length"`
+	Duration           int      `json:"duration"`
+	SelfSign           bool     `json:"self_sign"`
 }
 
 type CertificateResponse struct {
@@ -115,8 +117,7 @@ func (r *CertificateRequest) Generate(secretStore secret.Store) (CredentialRecor
 	var rootCaKey *rsa.PrivateKey
 	var err error
 
-	switch {
-	case r.IsRegularCertificateRequest() || r.IsIntermediateCaRequest():
+	if r.IsRegularCertificateRequest() || r.IsIntermediateCaRequest() {
 		if r.Parameters.SelfSign {
 			rootCaKey = nil
 			rootCaCert = nil
@@ -126,7 +127,9 @@ func (r *CertificateRequest) Generate(secretStore secret.Store) (CredentialRecor
 				return nil, err
 			}
 		}
-		fallthrough
+	}
+
+	switch {
 	case r.IsRegularCertificateRequest():
 		return r.GenerateRegularCertificate(rootCaCert, rootCaKey)
 	case r.IsIntermediateCaRequest():
@@ -134,7 +137,7 @@ func (r *CertificateRequest) Generate(secretStore secret.Store) (CredentialRecor
 	case r.IsRootCaRequest():
 		return r.GenerateRootCertificate()
 	default:
-		return nil, errors.New("unable to generate cert, unknown type, make sure to call Validate on the request before trying to Generate.")
+		return nil, errors.New("unable to generate cert, unknown type, make sure to call Validate on the request before trying to Generate")
 	}
 }
 
