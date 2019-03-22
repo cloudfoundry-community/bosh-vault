@@ -150,7 +150,9 @@ newly created KV2 entry at the expected path.
 
 ### dynamic
 
-Vault supports lots of dynamic secret engines which can both generate and expire credentials for many external services. 
+Vault supports lots of [dynamic secret engines](https://www.vaultproject.io/docs/secrets/) which can both generate and expire credentials for many external services
+in addition to providing foundational cryptographic data, like certificates and TOTPs. 
+ 
 Dynamic redirects allow config server to take advantage of these. For example, let's say you configured a postgres DB 
 role in Vault to generate expiring access to postgres at: `database/creds/my-app-role`
 
