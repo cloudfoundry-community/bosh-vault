@@ -6,8 +6,8 @@ in lieu of Credhub.
 Specifically `bosh-vault` can be used to:
   - Function as a simple and secure config-server implementation backed with Vault
   - Centralize access, auditability, and management for certain credentials via upstream redirects
-  - Utilize Vault's built in dynamic secret generation engines for access control to other services like databases via dynamic redirects
-  - Aid in migration from an existing non-version KV1 Vault store to versioned secrets in KV2 via v1 redirects
+  - Utilize Vault's built in (dynamic secret engines)[https://www.vaultproject.io/docs/secrets/] natively with Bosh via dynamic redirects
+  - Aid in migration from an existing non-versioned KV1 Vault store to versioned secrets in KV2 via v1 redirects
 
 There is a functional [Bosh release for this project](https://github.com/Zipcar/bosh-vault-release/releases) but it can also be run as a standalone
 binary outside of Bosh.
