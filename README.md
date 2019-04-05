@@ -184,6 +184,10 @@ binary outside of Bosh but this can make management a little more cumbersome.
 ![high level architecture diagram](docs/diagrams/high-level-architecture.jpg)
 
 Because bosh-vault is stateless and already dependent on a healthy Vault server, running it as a sidecar to Vault makes
-management relatively straightforward. In cases where you're using HA Vault deployed behind a load balancer with DNS and
-health checks, ensure that each Vault instance is also running a sidecar bosh-vault and send director requests through 
-the load balancer; Then your config-server setup will be just as resilient as your Vault deployment.
+management relatively straightforward and allows for the use of an IP scoped token that can only be used over loopback.
+In cases where you're using HA Vault deployed behind a load balancer with DNS and health checks, ensure that each Vault 
+instance is also running a sidecar bosh-vault and send director requests through the load balancer; Then your config-server 
+setup will be just as resilient as your Vault deployment.
+
+# More Info
+This repo contains a [docs folder](https://github.com/Zipcar/bosh-vault/tree/master/docs) that contains additional information and diagrams that may be useful. 
