@@ -2,7 +2,6 @@ package types_test
 
 import (
 	"crypto/x509"
-	"encoding/asn1"
 	"encoding/json"
 	"encoding/pem"
 	. "github.com/onsi/ginkgo"
@@ -39,7 +38,7 @@ var _ = Describe("RSA", func() {
 				rsaPriv, err := x509.ParsePKCS1PrivateKey(privBlock.Bytes)
 				Expect(err).ToNot(HaveOccurred())
 
-				pubKeyBytes, err := asn1.Marshal(rsaPriv.PublicKey)
+				pubKeyBytes, err := x509.MarshalPKIXPublicKey(rsaPriv.Public())
 				Expect(err).ToNot(HaveOccurred())
 				pemPublic := pem.EncodeToMemory(&pem.Block{
 					Type:  "PUBLIC KEY",

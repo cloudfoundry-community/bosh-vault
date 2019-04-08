@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
-	"encoding/asn1"
 	"encoding/pem"
 	"github.com/zipcar/bosh-vault/secret"
 )
@@ -48,11 +47,11 @@ func (r *RsaKeypairRequest) Generate(secretStore secret.Store) (CredentialRecord
 	}
 
 	pemPriv := pem.EncodeToMemory(&pem.Block{
-		Type:  "PRIVATE KEY",
+		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(privKey),
 	})
 
-	pubKeyBytes, err := asn1.Marshal(privKey.PublicKey)
+	pubKeyBytes, err := x509.MarshalPKIXPublicKey(privKey.Public())
 	if err != nil {
 		return nil, err
 	}
