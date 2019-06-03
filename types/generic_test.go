@@ -1,10 +1,10 @@
 package types_test
 
 import (
+	"github.com/cloudfoundry-community/bosh-vault/types"
+	fakes "github.com/cloudfoundry-community/bosh-vault/types/typesfakes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/zipcar/bosh-vault/types"
-	fakes "github.com/zipcar/bosh-vault/types/typesfakes"
 )
 
 var _ = Describe("Generic", func() {

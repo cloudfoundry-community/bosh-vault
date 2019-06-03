@@ -1,8 +1,8 @@
 package types
 
 import (
+	"github.com/cloudfoundry-community/bosh-vault/secret"
 	gopass "github.com/sethvargo/go-password/password"
-	"github.com/zipcar/bosh-vault/secret"
 )
 
 const PasswordType = "password"

@@ -4,7 +4,7 @@ jobs:
   build:
     docker:
     - image: circleci/golang:1.11.4
-    working_directory: ~/github.com/zipcar/bosh-vault
+    working_directory: ~/github.com/cloudfoundry-community/bosh-vault
     steps:
     - checkout
     - run: make test

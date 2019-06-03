@@ -2,7 +2,7 @@ package storefakes
 
 import (
 	"encoding/json"
-	"github.com/zipcar/bosh-vault/store"
+	"github.com/cloudfoundry-community/bosh-vault/store"
 )
 
 var ValidSecretMetadata = store.VersionedSecretMetaData{

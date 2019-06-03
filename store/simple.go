@@ -1,8 +1,8 @@
 package store
 
 import (
-	"github.com/zipcar/bosh-vault/secret"
-	"github.com/zipcar/bosh-vault/vault"
+	"github.com/cloudfoundry-community/bosh-vault/secret"
+	"github.com/cloudfoundry-community/bosh-vault/vault"
 )
 
 type SimpleStore struct {

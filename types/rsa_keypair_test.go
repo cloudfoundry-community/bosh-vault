@@ -4,11 +4,11 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
+	"github.com/cloudfoundry-community/bosh-vault/store"
+	"github.com/cloudfoundry-community/bosh-vault/types"
+	fakes "github.com/cloudfoundry-community/bosh-vault/types/typesfakes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/zipcar/bosh-vault/store"
-	"github.com/zipcar/bosh-vault/types"
-	fakes "github.com/zipcar/bosh-vault/types/typesfakes"
 )
 
 var _ = Describe("RSA", func() {

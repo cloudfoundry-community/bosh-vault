@@ -50,7 +50,7 @@ director are in the `local-dev` directory.
 ## Local Vault
 This repo contains the file storage backend for a development/testing Vault in `local-dev/vault/data`. There are Make
 scripts that will utilize it (`make vault` and `make unseal`) or you can use it directly. Checkout the [local Vault README
-file](https://github.com/Zipcar/bosh-vault/blob/master/local-dev/vault/README.md).
+file](https://github.com/cloudfoundry-community/bosh-vault/blob/master/local-dev/vault/README.md).
 
 ## Debugging Options
 For the convenience of both developers and auditors here is a `debug` configuration property available that can aid in 

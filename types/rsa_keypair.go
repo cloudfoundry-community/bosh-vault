@@ -5,7 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"github.com/zipcar/bosh-vault/secret"
+	"github.com/cloudfoundry-community/bosh-vault/secret"
 )
 
 const RsaKeypairType = "rsa"

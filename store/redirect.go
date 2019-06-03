@@ -3,9 +3,9 @@ package store
 import (
 	"encoding/json"
 	"errors"
-	"github.com/zipcar/bosh-vault/logger"
-	"github.com/zipcar/bosh-vault/secret"
-	"github.com/zipcar/bosh-vault/vault"
+	"github.com/cloudfoundry-community/bosh-vault/logger"
+	"github.com/cloudfoundry-community/bosh-vault/secret"
+	"github.com/cloudfoundry-community/bosh-vault/vault"
 )
 
 const v1Redirect = "v1"

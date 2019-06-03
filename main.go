@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/zipcar/bosh-vault/config"
-	"github.com/zipcar/bosh-vault/logger"
-	"github.com/zipcar/bosh-vault/server"
-	"github.com/zipcar/bosh-vault/version"
+	"github.com/cloudfoundry-community/bosh-vault/config"
+	"github.com/cloudfoundry-community/bosh-vault/logger"
+	"github.com/cloudfoundry-community/bosh-vault/server"
+	"github.com/cloudfoundry-community/bosh-vault/version"
 	"os"
 )
 

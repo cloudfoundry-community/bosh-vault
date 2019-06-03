@@ -1,9 +1,9 @@
 package store_test
 
 import (
+	"github.com/cloudfoundry-community/bosh-vault/store"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/zipcar/bosh-vault/store"
 )
 
 var seedData = []store.VaultTestData{

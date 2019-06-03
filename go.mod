@@ -1,4 +1,4 @@
-module github.com/zipcar/bosh-vault
+module github.com/cloudfoundry-community/bosh-vault
 
 require (
 	cloud.google.com/go v0.35.1 // indirect

@@ -1,10 +1,10 @@
 package store_test
 
 import (
+	"github.com/cloudfoundry-community/bosh-vault/store"
+	"github.com/cloudfoundry-community/bosh-vault/store/storefakes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/zipcar/bosh-vault/store"
-	"github.com/zipcar/bosh-vault/store/storefakes"
 )
 
 var _ = Describe("Store ID", func() {

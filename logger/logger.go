@@ -1,8 +1,8 @@
 package logger
 
 import (
+	"github.com/cloudfoundry-community/bosh-vault/config"
 	"github.com/sirupsen/logrus"
-	"github.com/zipcar/bosh-vault/config"
 	"os"
 )
 

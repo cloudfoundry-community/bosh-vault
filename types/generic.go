@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/zipcar/bosh-vault/secret"
+	"github.com/cloudfoundry-community/bosh-vault/secret"
 )
 
 const NoOverwriteMode = "no-overwrite"

@@ -1,11 +1,11 @@
 package store_test
 
 import (
+	"github.com/cloudfoundry-community/bosh-vault/logger"
+	"github.com/cloudfoundry-community/bosh-vault/store"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
-	"github.com/zipcar/bosh-vault/logger"
-	"github.com/zipcar/bosh-vault/store"
 	"io/ioutil"
 	"net"
 	"testing"

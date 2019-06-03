@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/zipcar/bosh-vault/config"
-	"github.com/zipcar/bosh-vault/logger"
-	"github.com/zipcar/bosh-vault/secret"
-	"github.com/zipcar/bosh-vault/vault"
+	"github.com/cloudfoundry-community/bosh-vault/config"
+	"github.com/cloudfoundry-community/bosh-vault/logger"
+	"github.com/cloudfoundry-community/bosh-vault/secret"
+	"github.com/cloudfoundry-community/bosh-vault/vault"
 	"strconv"
 )
 

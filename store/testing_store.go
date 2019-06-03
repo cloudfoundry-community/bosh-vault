@@ -1,13 +1,13 @@
 package store
 
 import (
+	"github.com/cloudfoundry-community/bosh-vault/config"
+	"github.com/cloudfoundry-community/bosh-vault/vault"
 	"github.com/hashicorp/vault-plugin-secrets-kv"
 	"github.com/hashicorp/vault/api"
 	"github.com/hashicorp/vault/http"
 	"github.com/hashicorp/vault/logical"
 	hashiVault "github.com/hashicorp/vault/vault"
-	"github.com/zipcar/bosh-vault/config"
-	"github.com/zipcar/bosh-vault/vault"
 	"net"
 	"testing"
 )

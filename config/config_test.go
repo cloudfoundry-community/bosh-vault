@@ -1,7 +1,7 @@
 package config_test
 
 import (
-	"github.com/zipcar/bosh-vault/config"
+	"github.com/cloudfoundry-community/bosh-vault/config"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

@@ -3,9 +3,9 @@ package server
 import (
 	"errors"
 	"fmt"
+	"github.com/cloudfoundry-community/bosh-vault/secret"
+	"github.com/cloudfoundry-community/bosh-vault/types"
 	"github.com/labstack/echo"
-	"github.com/zipcar/bosh-vault/secret"
-	"github.com/zipcar/bosh-vault/types"
 	"io/ioutil"
 	"net/http"
 )

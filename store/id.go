@@ -12,7 +12,7 @@ package store
 import (
 	"encoding/base64"
 	"encoding/json"
-	"github.com/zipcar/bosh-vault/logger"
+	"github.com/cloudfoundry-community/bosh-vault/logger"
 )
 
 type VersionedSecretMetaData struct {
