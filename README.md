@@ -9,10 +9,10 @@ Specifically `bosh-vault` can be used to:
   - Utilize Vault's built in [dynamic secret engines](https://www.vaultproject.io/docs/secrets/) natively with Bosh via dynamic redirects
   - Aid in migration from an existing non-versioned KV1 Vault store to versioned secrets in KV2 via v1 redirects
 
-There is a functional [Bosh release for this project](https://github.com/Zipcar/bosh-vault-release/releases) but it can also be run as a standalone
+There is a functional [Bosh release for this project](https://github.com/cloudfoundry-community/bosh-vault-release/releases) but it can also be run as a standalone
 binary outside of Bosh.
 
-[![CircleCI](https://circleci.com/gh/Zipcar/bosh-vault/tree/master.svg?style=svg)](https://circleci.com/gh/Zipcar/bosh-vault/tree/master)
+[![CircleCI](https://circleci.com/gh/cloudfoundry-community/bosh-vault/tree/master.svg?style=svg)](https://circleci.com/gh/cloudfoundry-community/bosh-vault/tree/master)
 
 # Configuration
 The bosh-vault binary can be configured using a configuration file or environment variables. In the case where both are 
@@ -190,4 +190,4 @@ instance is also running a sidecar bosh-vault and send director requests through
 setup will be just as resilient as your Vault deployment.
 
 # More Info
-This repo contains a [docs folder](https://github.com/Zipcar/bosh-vault/tree/master/docs) that contains additional information and diagrams that may be useful. 
+This repo contains a [docs folder](https://github.com/cloudfoundry-community/bosh-vault/tree/master/docs) that contains additional information and diagrams that may be useful. 
