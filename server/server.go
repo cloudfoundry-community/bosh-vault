@@ -1,6 +1,7 @@
 package server
 
 import (
+	"crypto/tls"
 	"fmt"
 	"github.com/cloudfoundry-community/bosh-vault/config"
 	"github.com/cloudfoundry-community/bosh-vault/logger"
@@ -90,7 +91,25 @@ func ListenAndServe(bvConfig config.Configuration) {
 				logger.Log.Info("shutting down the bosh-vault api server")
 			}
 		} else {
-			if err := e.StartTLS(bvConfig.Api.Address, bvConfig.Tls.Cert, bvConfig.Tls.Key); err != nil {
+			// setup custom TLS config and HTTP server to ensure TLS1.2
+			cert, err := tls.LoadX509KeyPair(bvConfig.Tls.Cert, bvConfig.Tls.Key)
+			if err != nil {
+				logger.Log.Fatal("Can't load certificates for TLS")
+			}
+
+			tlsConfig := &tls.Config{
+				MinVersion:               tls.VersionTLS12,
+				MaxVersion:               tls.VersionTLS12,
+				PreferServerCipherSuites: true,
+				Certificates:             []tls.Certificate{cert},
+			}
+
+			server := &http.Server{
+				Addr:      bvConfig.Api.Address,
+				TLSConfig: tlsConfig,
+			}
+
+			if err := e.StartServer(server); err != nil {
 				logger.Log.Info("shutting down the bosh-vault api server")
 			}
 		}
